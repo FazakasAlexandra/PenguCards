@@ -1,17 +1,14 @@
 import {Layout, Text} from '@ui-kitten/components';
 import DockCard from '../components/DockCard';
-import DockersControll from '../components/DockersControll';
+import Controller from '../components/Controller';
 import LogoHeader from '../components/LogoHeader';
 import React from 'react';
 import {ScrollView, View} from 'react-native';
 import Dice from '../assets/icons/dice.svg';
+import {Dock} from '../types/Dock';
 
-const DockView = () => {
-  const cards: {
-    id: number;
-    title: string;
-    cardsCount: number;
-  }[] = [
+const DockView = ({navigation}: {navigation: any}) => {
+  const cards: Dock[] = [
     {
       id: 1,
       title: 'Schwarze Swan',
@@ -44,8 +41,10 @@ const DockView = () => {
   return (
     <View style={{flex: 1}}>
       <LogoHeader />
-      <DockersControll
-        docksCount={cards.length}
+      <Controller
+        controlls="dock"
+        title="Docks"
+        counter={cards.length}
         resetFilter={() => setFilteredCards(cards)}
         filterCards={(searchTerm: string) => {
           const newCards = cards.filter(card =>
@@ -62,7 +61,13 @@ const DockView = () => {
           style={{flex: 1, paddingLeft: 12, paddingRight: 12, paddingTop: 12}}>
           {(filteredCards.length &&
             filteredCards.map(card => (
-              <DockCard card={card} key={card.id} />
+              <DockCard
+                card={card}
+                key={card.id}
+                navigateToCardsList={() => {
+                  navigation.navigate('CardsList', card);
+                }}
+              />
             ))) || <Text>Dock not found.</Text>}
         </Layout>
       </ScrollView>

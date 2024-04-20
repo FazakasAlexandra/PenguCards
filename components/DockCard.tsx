@@ -4,7 +4,11 @@ import {View} from 'react-native';
 import db from '../firebaseConfig';
 import {collection, getDocs, addDoc} from 'firebase/firestore'; // Import the collection method
 
-const CardFooter = (): React.ReactElement => {
+const CardFooter = ({
+  navigateToCardsList,
+}: {
+  navigateToCardsList: () => void;
+}): React.ReactElement => {
   const addCard = async () => {
     console.log('Adding card');
     try {
@@ -29,7 +33,9 @@ const CardFooter = (): React.ReactElement => {
         justifyContent: 'space-between',
         margin: 12,
       }}>
-      <Button size="small">Practice</Button>
+      <Button size="small" onPress={() => navigateToCardsList()}>
+        Practice
+      </Button>
       <Button
         size="small"
         status="basic"
@@ -44,7 +50,9 @@ const CardFooter = (): React.ReactElement => {
 
 const DockCard = ({
   card,
+  navigateToCardsList,
 }: {
+  navigateToCardsList: () => void;
   card: {
     title: string;
     cardsCount: number;
@@ -56,7 +64,7 @@ const DockCard = ({
         flex: 1,
         marginBottom: 12,
       }}
-      footer={<CardFooter />}>
+      footer={<CardFooter navigateToCardsList={navigateToCardsList} />}>
       <Text category="s1">{card.title}</Text>
       <Text category="p2" style={{marginTop: 4}}>
         {card.cardsCount} cards

@@ -1,17 +1,20 @@
 import React, {useState} from 'react';
 import {Button, Input, Icon, Text, Layout} from '@ui-kitten/components';
 import {View} from 'react-native';
+import {ControllerProps} from '../types/Controller';
 
-const DockersControll = (props: {
-  docksCount: number;
-  filterCards: (searchTerm: string) => void;
-  resetFilter: () => void;
-}) => {
+const Controller = ({
+  title,
+  counter,
+  filterCards,
+  resetFilter,
+  controlls,
+}: ControllerProps) => {
   const [searchTerm, setSearchTerm] = useState('');
 
   const handleSearchTermChange = (value: string) => {
     setSearchTerm(value);
-    props.filterCards(value);
+    filterCards(value);
   };
 
   return (
@@ -37,19 +40,21 @@ const DockersControll = (props: {
           alignItems: 'center',
           paddingVertical: 4,
         }}>
-        <Text>Docks ({props.docksCount})</Text>
+        <Text>
+          {title} ({counter})
+        </Text>
         <Button
           size="small"
           status="basic"
           appearance="ghost"
           accessoryLeft={<Icon name="plus" />}>
-          Dock
+          {controlls.charAt(0).toUpperCase() + controlls.slice(1)}
         </Button>
       </View>
       <Input
         value={searchTerm}
         size="small"
-        placeholder="Search for dock..."
+        placeholder={`Search for ${controlls}`}
         accessoryRight={<Icon name="search" />}
         accessoryLeft={
           (searchTerm && (
@@ -57,7 +62,7 @@ const DockersControll = (props: {
               name="close-outline"
               onPress={() => {
                 setSearchTerm('');
-                props.resetFilter();
+                resetFilter();
               }}
             />
           )) ||
@@ -69,4 +74,4 @@ const DockersControll = (props: {
   );
 };
 
-export default DockersControll;
+export default Controller;
