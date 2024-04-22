@@ -2,7 +2,7 @@ import React from 'react';
 import {Button, Card, Icon, Text} from '@ui-kitten/components';
 import {View} from 'react-native';
 import db from '../firebaseConfig';
-import {collection, getDocs, addDoc} from 'firebase/firestore'; // Import the collection method
+import {collection, addDoc} from 'firebase/firestore'; // Import the collection method
 
 const CardFooter = ({
   navigateToCardsList,
@@ -13,7 +13,6 @@ const CardFooter = ({
     console.log('Adding card');
     try {
       const cardsCollection = await collection(db, 'cards');
-      //const cardsSnapshot = await getDocs(cardsCollection);
       await addDoc(cardsCollection, {
         id: 2,
         front: 'The Holy Bible',
@@ -49,11 +48,11 @@ const CardFooter = ({
 };
 
 const DockCard = ({
-  card,
+  dock,
   navigateToCardsList,
 }: {
   navigateToCardsList: () => void;
-  card: {
+  dock: {
     title: string;
     cardsCount: number;
   };
@@ -65,9 +64,9 @@ const DockCard = ({
         marginBottom: 12,
       }}
       footer={<CardFooter navigateToCardsList={navigateToCardsList} />}>
-      <Text category="s1">{card.title}</Text>
+      <Text category="s1">{dock.title}</Text>
       <Text category="p2" style={{marginTop: 4}}>
-        {card.cardsCount} cards
+        {dock.cardsCount} cards
       </Text>
     </Card>
   );

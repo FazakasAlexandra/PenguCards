@@ -2,41 +2,49 @@ import {Layout, Text} from '@ui-kitten/components';
 import DockCard from '../components/DockCard';
 import Controller from '../components/Controller';
 import LogoHeader from '../components/LogoHeader';
-import React from 'react';
+import React, {useEffect} from 'react';
 import {ScrollView, View} from 'react-native';
 import Dice from '../assets/icons/dice.svg';
 import {Dock} from '../types/Dock';
+import {
+  getDocs,
+  collection,
+  DocumentData,
+  CollectionReference,
+  QuerySnapshot,
+} from 'firebase/firestore';
+import db from '../firebaseConfig';
 
 const DockView = ({navigation}: {navigation: any}) => {
-  const cards: Dock[] = [
-    {
-      id: 1,
-      title: 'Schwarze Swan',
-      cardsCount: 12,
-    },
-    {
-      id: 2,
-      title: 'The Holy Bible',
-      cardsCount: 192,
-    },
-    {
-      id: 3,
-      title: 'Comunist Manifesto',
-      cardsCount: 55,
-    },
-    {
-      id: 4,
-      title: 'Comunist Manifesto',
-      cardsCount: 55,
-    },
-    {
-      id: 5,
-      title: 'Comunist Manifesto',
-      cardsCount: 55,
-    },
-  ];
+  const [docks, setDocks] = React.useState<Dock[]>([]);
+  const [filteredDocks, setFilteredDocks] = React.useState<Dock[]>([]);
 
-  const [filteredCards, setFilteredCards] = React.useState(cards);
+  useEffect(() => {
+    (async () => {
+      const docks = await getDocks();
+      setDocks(docks);
+      setFilteredDocks(docks);
+    })();
+  }, []);
+
+  const getDocks = async (): Promise<Dock[]> => {
+    try {
+      const docksCollection: CollectionReference<DocumentData> = collection(
+        db,
+        'docks',
+      );
+      const docksSnapshot: QuerySnapshot<DocumentData> = await getDocs(
+        docksCollection,
+      );
+      return docksSnapshot.docs.map(doc => {
+        const dock = doc.data();
+        return {...dock, id: doc.id, cardsCount: dock.cards.length} as Dock;
+      });
+    } catch (error) {
+      console.error('Error getting collection: ', error);
+      return [];
+    }
+  };
 
   return (
     <View style={{flex: 1}}>
@@ -44,13 +52,13 @@ const DockView = ({navigation}: {navigation: any}) => {
       <Controller
         controlls="dock"
         title="Docks"
-        counter={cards.length}
-        resetFilter={() => setFilteredCards(cards)}
+        counter={docks.length}
+        resetFilter={() => setFilteredDocks(docks)}
         filterCards={(searchTerm: string) => {
-          const newCards = cards.filter(card =>
-            card.title.toLowerCase().includes(searchTerm.toLowerCase()),
+          const newCards = docks.filter(docks =>
+            docks.title.toLowerCase().includes(searchTerm.toLowerCase()),
           );
-          setFilteredCards(newCards);
+          setFilteredDocks(newCards);
         }}
       />
       <ScrollView
@@ -59,13 +67,13 @@ const DockView = ({navigation}: {navigation: any}) => {
         <Layout
           level="3"
           style={{flex: 1, paddingLeft: 12, paddingRight: 12, paddingTop: 12}}>
-          {(filteredCards.length &&
-            filteredCards.map(card => (
+          {(filteredDocks.length &&
+            filteredDocks.map(dock => (
               <DockCard
-                card={card}
-                key={card.id}
+                dock={dock}
+                key={dock.id}
                 navigateToCardsList={() => {
-                  navigation.navigate('CardsList', card);
+                  navigation.navigate('CardsList', dock);
                 }}
               />
             ))) || <Text>Dock not found.</Text>}
