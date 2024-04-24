@@ -12,7 +12,53 @@ type CardsListProps = NativeStackScreenProps<RootStackParamList, 'CardsList'>;
 
 const CardsList = ({route, navigation}: CardsListProps) => {
   const dock = route.params;
-  //const [filteredCards, setFilteredCards] = React.useState(cards);
+  const [searchTerm, setSearchTerm] = React.useState<string>('');
+  const [filteredCards, setFilteredCards] = React.useState<CardT[]>(dock.cards);
+
+  const splitText = (text: string) =>
+    text.split(new RegExp(`(${searchTerm})`, 'gi'));
+
+  const HighlightedFrontText = (props: {text: string}) => (
+    <Text>
+      {splitText(props.text).map((part, index) => {
+        return (
+          <React.Fragment key={index}>
+            {part.toLowerCase() === searchTerm.toLowerCase() ? (
+              <Text category="s1">{part}</Text>
+            ) : (
+              <Text>{part}</Text>
+            )}
+          </React.Fragment>
+        );
+      })}
+    </Text>
+  );
+
+  const HighlightedBackText = (props: {text: string}) => (
+    <Text>
+      {splitText(props.text).map((part, index) => {
+        return (
+          <React.Fragment key={part + index}>
+            {part.toLowerCase() === searchTerm.toLowerCase() ? (
+              <Text
+                appearance="hint"
+                category="c2"
+                style={{textAlign: 'center', marginTop: 4}}>
+                {part}
+              </Text>
+            ) : (
+              <Text
+                appearance="hint"
+                category="c1"
+                style={{textAlign: 'center', marginTop: 4}}>
+                {part}
+              </Text>
+            )}
+          </React.Fragment>
+        );
+      })}
+    </Text>
+  );
 
   return (
     <View style={{flex: 1}}>
@@ -22,7 +68,15 @@ const CardsList = ({route, navigation}: CardsListProps) => {
         title={dock.title}
         counter={dock.cardsCount}
         resetFilter={() => {}}
-        filterCards={(searchTerm: string) => {}}
+        filterCards={(searchTerm: string) => {
+          const filtered = dock.cards.filter(
+            card =>
+              card.front.toLowerCase().includes(searchTerm.toLowerCase()) ||
+              card.back.toLowerCase().includes(searchTerm.toLowerCase()),
+          );
+          setSearchTerm(searchTerm);
+          setFilteredCards(filtered);
+        }}
       />
       <ScrollView
         style={{flex: 1, paddingBottom: 12}}
@@ -38,30 +92,34 @@ const CardsList = ({route, navigation}: CardsListProps) => {
             justifyContent: 'space-between',
             alignItems: 'center',
           }}>
-          {dock.cards.map((card: CardT) => (
-            <Card
-              key={card.id}
-              style={{
-                width: '48%',
-                justifyContent: 'center',
-                alignItems: 'center',
-              }}>
-              {card.image ? (
-                <Placeholder
-                  style={{alignSelf: 'center'}}
-                  width={25}
-                  height={25}
-                />
-              ) : null}
-              <Text style={{textAlign: 'center'}}>{card.front}</Text>
-              <Text
-                appearance="hint"
-                category="c1"
-                style={{textAlign: 'center', marginTop: 4}}>
-                {card.back}
-              </Text>
-            </Card>
-          ))}
+          {(searchTerm && !filteredCards.length && (
+            <Text>No cards found.</Text>
+          )) ||
+            filteredCards.map((card: CardT) => (
+              <Card
+                onPress={() => {
+                  navigation.navigate('DockPracticeView', {
+                    dock,
+                    selectedCard: card,
+                  });
+                }}
+                key={card.id}
+                style={{
+                  width: '48%',
+                  justifyContent: 'center',
+                  alignItems: 'center',
+                }}>
+                {card.image ? (
+                  <Placeholder
+                    style={{alignSelf: 'center'}}
+                    width={25}
+                    height={25}
+                  />
+                ) : null}
+                <HighlightedFrontText text={card.front} />
+                <HighlightedBackText text={card.back} />
+              </Card>
+            ))}
         </Layout>
       </ScrollView>
     </View>
