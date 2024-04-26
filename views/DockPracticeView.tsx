@@ -7,7 +7,7 @@ import {RootStackParamList} from '../types/Navigation';
 import {ProgressBar} from '@ui-kitten/components';
 import Lightbulb from '../assets/icons/lightbulb.svg';
 import LightbulbCrossed from '../assets/icons/lightbulbCrossed.svg';
-import GestureRecognizer from 'react-native-swipe-gestures';
+import FlipCard from 'react-native-flip-card';
 
 type DockPracticeViewProps = NativeStackScreenProps<
   RootStackParamList,
@@ -19,97 +19,99 @@ const DockPracticeView = ({route, navigation}: DockPracticeViewProps) => {
   const [currentCard, setCurrentCard] = React.useState<number>(0);
   const [mode, setMode] = React.useState<'front' | 'back' | 'hint'>('front');
 
-  const modeStyles: {
-    hint: {backgroundColor: string};
-    back: {backgroundColor: string};
-    front: {backgroundColor: string};
-  } = {
-    hint: {
-      backgroundColor: '#ED9A32',
-    },
-    back: {
-      backgroundColor: '#3B3632',
-    },
-    front: {
-      backgroundColor: 'white',
-    },
+  const HintButton = () => {
+    return (
+      <Card
+        onPress={() => {
+          console.log('pressed!');
+          setMode(mode === 'hint' ? 'front' : 'hint');
+        }}
+        style={{
+          zIndex: 999,
+          position: 'absolute',
+          justifyContent: 'center',
+          alignItems: 'center',
+          backgroundColor: '#FFE9B5',
+          borderRadius: 20,
+          borderWidth: 0,
+          width: 80,
+          alignSelf: 'center',
+          marginTop: 150,
+        }}>
+        <Text category="c2" status="primary">
+          HINT
+        </Text>
+        {mode === 'hint' ? (
+          <LightbulbCrossed width={28} height={28} />
+        ) : (
+          <Lightbulb width={28} height={28} />
+        )}
+      </Card>
+    );
   };
 
   return (
     <View style={{flex: 1}}>
       <LogoHeader />
-      <ProgressBar
-        progress={0.4}
-        size="giant"
-        style={{width: '95%', alignSelf: 'center'}}
-      />
-      <View style={{flex: 1, paddingBottom: 12}}>
-        <Layout
-          level="3"
-          style={{
-            flex: 1,
-            paddingHorizontal: 12,
-            paddingTop: 12,
-            flexDirection: 'row',
-            flexWrap: 'wrap',
-            justifyContent: 'space-between',
-            alignItems: 'center',
-          }}>
-          <Card
-            onPress={() => {
-              setMode(mode === 'back' ? 'front' : 'back');
-            }}
-            style={{
-              width: '100%',
-              height: '100%',
-              alignItems: 'center',
-              justifyContent: 'center',
-              backgroundColor: modeStyles[mode].backgroundColor,
-            }}>
-            <View
-              style={{
-                justifyContent: 'center',
-                alignItems: 'center',
-                height: mode === 'back' ? '100%' : '80%',
-              }}>
-              <Text
-                category="s2"
-                style={{
-                  fontSize: 25,
-                  alignSelf: 'center',
-                  color: mode === 'back' ? 'white' : '#3B3632',
-                }}>
-                {route.params.dock.cards[currentCard][mode]}
-              </Text>
-            </View>
-            {mode !== 'back' && (
-              <Card
-                onPress={() => {
-                  setMode(mode === 'hint' ? 'front' : 'hint');
-                }}
-                style={{
-                  bottom: 0,
-                  justifyContent: 'center',
-                  alignItems: 'center',
-                  backgroundColor: '#FFE9B5',
-                  borderRadius: 20,
-                  borderWidth: 0,
-                  width: 80,
-                  alignSelf: 'center',
-                }}>
-                <Text category="c2" status="primary">
-                  HINT
-                </Text>
-                {mode === 'hint' ? (
-                  <LightbulbCrossed width={28} height={28} />
-                ) : (
-                  <Lightbulb width={28} height={28} />
-                )}
-              </Card>
-            )}
-          </Card>
-        </Layout>
+      <View>
+        <ProgressBar
+          progress={currentCard + 1 / route.params.dock.cardsCount}
+          size="giant"
+          style={{width: '95%', alignSelf: 'center', height: 18}}
+        />
+        <Text style={{position: 'absolute', right: '50%'}}>
+          {`${currentCard + 1} / ${route.params.dock.cardsCount}`}
+        </Text>
       </View>
+      <Layout level="3" style={{flex: 1, padding: 12}}>
+        {(mode !== 'hint' && (
+          <FlipCard
+            onFlipStart={() => {
+              setMode(mode === 'front' ? 'back' : 'front');
+            }}
+            friction={6}
+            perspective={1000}
+            flipHorizontal={true}
+            flipVertical={false}
+            clickable={true}>
+            <Card
+              disabled={true}
+              style={{
+                height: '100%',
+                justifyContent: 'center',
+              }}>
+              <Text style={{fontSize: 25, alignSelf: 'center'}}>
+                {route.params.dock.cards[currentCard].front}
+              </Text>
+              <HintButton />
+            </Card>
+            <Card
+              disabled={true}
+              style={{
+                height: '100%',
+                backgroundColor: '#3B3632',
+                justifyContent: 'center',
+              }}>
+              <Text style={{color: 'white', fontSize: 25, alignSelf: 'center'}}>
+                {route.params.dock.cards[currentCard].back}
+              </Text>
+            </Card>
+          </FlipCard>
+        )) || (
+          <Card
+            style={{
+              zIndex: 99,
+              height: '100%',
+              backgroundColor: '#ED9A32',
+              justifyContent: 'center',
+            }}>
+            <Text style={{fontSize: 25, alignSelf: 'center'}}>
+              {route.params.dock.cards[currentCard].hint}
+            </Text>
+            <HintButton />
+          </Card>
+        )}
+      </Layout>
     </View>
   );
 };
