@@ -95,12 +95,12 @@ const CardsList = ({route, navigation}: CardsListProps) => {
           {(searchTerm && !filteredCards.length && (
             <Text>No cards found.</Text>
           )) ||
-            filteredCards.map((card: CardT) => (
+            filteredCards.map((card: CardT, idx) => (
               <Card
                 onPress={() => {
                   navigation.navigate('DockPracticeView', {
                     dock,
-                    selectedCard: card,
+                    selectedCardIndex: idx,
                   });
                 }}
                 key={card.id}
@@ -108,6 +108,7 @@ const CardsList = ({route, navigation}: CardsListProps) => {
                   width: '48%',
                   justifyContent: 'center',
                   alignItems: 'center',
+                  marginBottom: 12,
                 }}>
                 {card.image ? (
                   <Placeholder
