@@ -16,6 +16,7 @@ import {createNativeStackNavigator} from '@react-navigation/native-stack';
 import {RootStackParamList} from './types/Navigation';
 import CardsList from './views/CardsList';
 import DockPracticeView from './views/DockPracticeView';
+import DockCompletedView from './views/DockCompletedView';
 
 function App(): React.JSX.Element {
   // const isDarkMode = useColorScheme() === 'dark';
@@ -43,6 +44,11 @@ function App(): React.JSX.Element {
             name="DockPracticeView"
             component={DockPracticeView}
             options={{title: 'DockPracticeView'}}
+          />
+          <Stack.Screen
+            name="DockCompletedView"
+            component={DockCompletedView}
+            options={{title: 'DockCompletedView'}}
           />
         </Stack.Navigator>
       </ApplicationProvider>

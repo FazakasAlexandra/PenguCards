@@ -9,6 +9,7 @@ import Lightbulb from '../assets/icons/lightbulb.svg';
 import LightbulbCrossed from '../assets/icons/lightbulbCrossed.svg';
 import FlipCard from 'react-native-flip-card';
 import Swiper from 'react-native-deck-swiper';
+import {Card as CardT} from '../types/Card';
 
 type DockPracticeViewProps = NativeStackScreenProps<
   RootStackParamList,
@@ -16,6 +17,7 @@ type DockPracticeViewProps = NativeStackScreenProps<
 >;
 
 const DockPracticeView = ({route, navigation}: DockPracticeViewProps) => {
+  const cards = route.params.dock.cards;
   const [currentCardIndex, setCurrentCardIndex] = React.useState<number>(
     route.params.selectedCardIndex || 0,
   );
@@ -24,7 +26,19 @@ const DockPracticeView = ({route, navigation}: DockPracticeViewProps) => {
     'left' | 'right' | null
   >(null);
 
-  const cards = route.params.dock.cards;
+  const getNextCardIndex = () => {
+    if (swipeDirection === 'left') {
+      return currentCardIndex === 0 ? 0 : currentCardIndex - 1;
+    } else {
+      return currentCardIndex + 1;
+    }
+  };
+
+  useEffect(() => {
+    if (currentCardIndex >= cards.length) {
+      navigation.navigate('DockCompletedView', {dock: route.params.dock});
+    }
+  }, [currentCardIndex, cards.length, navigation]);
 
   const HintCard = () => {
     return (
@@ -42,16 +56,10 @@ const DockPracticeView = ({route, navigation}: DockPracticeViewProps) => {
       </Card>
     );
   };
+
   const NextCard = () => {
-    const getNextCardIndex = () => {
-      if (swipeDirection === 'left') {
-        return currentCardIndex - 1 < 0 ? 0 : currentCardIndex - 1;
-      } else {
-        return currentCardIndex + 1 === cards.length
-          ? currentCardIndex
-          : currentCardIndex + 1;
-      }
-    };
+    const nextCardIndex = getNextCardIndex();
+
     return (
       <Card
         disabled={true}
@@ -62,7 +70,7 @@ const DockPracticeView = ({route, navigation}: DockPracticeViewProps) => {
           justifyContent: 'center',
         }}>
         <Text style={{fontSize: 25, alignSelf: 'center'}}>
-          {cards[getNextCardIndex()]?.front}
+          {cards[nextCardIndex]?.front}
         </Text>
         <HintButton />
       </Card>
@@ -73,7 +81,6 @@ const DockPracticeView = ({route, navigation}: DockPracticeViewProps) => {
     return (
       <Card
         onPress={() => {
-          console.log('pressed!');
           setMode(mode === 'hint' ? 'front' : 'hint');
         }}
         style={{
@@ -100,17 +107,30 @@ const DockPracticeView = ({route, navigation}: DockPracticeViewProps) => {
     );
   };
 
+  const onSwipe = () => {
+    setMode('front');
+    setCurrentCardIndex(getNextCardIndex());
+  };
+
+  const changeSwipeDirection = (x: number) => {
+    if (x > 0) {
+      setSwipeDirection('right');
+    } else {
+      setSwipeDirection('left');
+    }
+  };
+
   return (
     <View style={{flex: 1}}>
       <LogoHeader />
       <View>
         <ProgressBar
-          progress={currentCardIndex / route.params.dock.cards.length}
+          progress={currentCardIndex / cards.length}
           size="giant"
           style={{width: '95%', alignSelf: 'center', height: 18}}
         />
         <Text style={{position: 'absolute', right: '50%'}}>
-          {`${currentCardIndex} / ${route.params.dock.cards.length}`}
+          {`${currentCardIndex} / ${cards.length}`}
         </Text>
       </View>
       <Layout level="3" style={{flex: 1}}>
@@ -125,13 +145,7 @@ const DockPracticeView = ({route, navigation}: DockPracticeViewProps) => {
           ref={ref => {
             ref?.forceUpdate();
           }}
-          onSwiping={(x, _y) => {
-            if (x > 0) {
-              setSwipeDirection('right');
-            } else {
-              setSwipeDirection('left');
-            }
-          }}
+          onSwiping={changeSwipeDirection}
           containerStyle={{flex: 1}}
           cards={cards}
           swipeBackCard={true}
@@ -184,21 +198,11 @@ const DockPracticeView = ({route, navigation}: DockPracticeViewProps) => {
               </>
             );
           }}
-          onSwipedLeft={cardIndex => {
-            setMode('front');
-            setCurrentCardIndex(currentCardIndex === 0 ? 0 : cardIndex - 1);
-          }}
-          onSwipedRight={_cardIndex => {
-            setMode('front');
-            setCurrentCardIndex(
-              currentCardIndex === cards.length - 1
-                ? cards.length
-                : currentCardIndex + 1,
-            );
-          }}
+          onSwipedLeft={onSwipe}
+          onSwipedRight={onSwipe}
           backgroundColor="transparent"
         />
-        <NextCard />
+        {getNextCardIndex() >= cards.length ? null : <NextCard />}
       </Layout>
     </View>
   );

@@ -98,9 +98,14 @@ const CardsList = ({route, navigation}: CardsListProps) => {
             filteredCards.map((card: CardT, idx) => (
               <Card
                 onPress={() => {
-                  navigation.navigate('DockPracticeView', {
-                    dock,
-                    selectedCardIndex: idx,
+                  navigation.reset({
+                    index: 0,
+                    routes: [
+                      {
+                        name: 'DockPracticeView',
+                        params: {dock, selectedCardIndex: idx},
+                      },
+                    ],
                   });
                 }}
                 key={card.id}
