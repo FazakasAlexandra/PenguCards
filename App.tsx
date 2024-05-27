@@ -8,15 +8,15 @@
 import React from 'react';
 import * as eva from '@eva-design/eva';
 import {default as theme} from './custom-theme.json'; // <-- Import app theme
-import DockView from './views/DockView';
+import DeckView from './views/DeckView';
 import {ApplicationProvider, IconRegistry} from '@ui-kitten/components';
 import {EvaIconsPack} from '@ui-kitten/eva-icons';
 import {NavigationContainer} from '@react-navigation/native';
 import {createNativeStackNavigator} from '@react-navigation/native-stack';
 import {RootStackParamList} from './types/Navigation';
 import CardsList from './views/CardsList';
-import DockPracticeView from './views/DockPracticeView';
-import DockCompletedView from './views/DockCompletedView';
+import DeckPracticeView from './views/DeckPracticeView';
+import DeckCompletedView from './views/DeckCompletedView';
 
 function App(): React.JSX.Element {
   // const isDarkMode = useColorScheme() === 'dark';
@@ -32,7 +32,7 @@ function App(): React.JSX.Element {
           }}>
           <Stack.Screen
             name="Home"
-            component={DockView}
+            component={DeckView}
             options={{title: 'Home'}}
           />
           <Stack.Screen
@@ -41,14 +41,14 @@ function App(): React.JSX.Element {
             options={{title: 'CardsList'}}
           />
           <Stack.Screen
-            name="DockPracticeView"
-            component={DockPracticeView}
-            options={{title: 'DockPracticeView'}}
+            name="DeckPracticeView"
+            component={DeckPracticeView}
+            options={{title: 'DeckPracticeView'}}
           />
           <Stack.Screen
-            name="DockCompletedView"
-            component={DockCompletedView}
-            options={{title: 'DockCompletedView'}}
+            name="DeckCompletedView"
+            component={DeckCompletedView}
+            options={{title: 'DeckCompletedView'}}
           />
         </Stack.Navigator>
       </ApplicationProvider>

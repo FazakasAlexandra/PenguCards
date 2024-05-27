@@ -11,9 +11,9 @@ import Placeholder from '../assets/icons/placeholder.svg';
 type CardsListProps = NativeStackScreenProps<RootStackParamList, 'CardsList'>;
 
 const CardsList = ({route, navigation}: CardsListProps) => {
-  const dock = route.params;
+  const deck = route.params;
   const [searchTerm, setSearchTerm] = React.useState<string>('');
-  const [filteredCards, setFilteredCards] = React.useState<CardT[]>(dock.cards);
+  const [filteredCards, setFilteredCards] = React.useState<CardT[]>(deck.cards);
 
   const splitText = (text: string) =>
     text.split(new RegExp(`(${searchTerm})`, 'gi'));
@@ -65,11 +65,11 @@ const CardsList = ({route, navigation}: CardsListProps) => {
       <LogoHeader />
       <Controller
         controlls="cards"
-        title={dock.title}
-        counter={dock.cardsCount}
+        title={deck.title}
+        counter={deck.cardsCount}
         resetFilter={() => {}}
         filterCards={(searchTerm: string) => {
-          const filtered = dock.cards.filter(
+          const filtered = deck.cards.filter(
             card =>
               card.front.toLowerCase().includes(searchTerm.toLowerCase()) ||
               card.back.toLowerCase().includes(searchTerm.toLowerCase()),
@@ -102,8 +102,8 @@ const CardsList = ({route, navigation}: CardsListProps) => {
                     index: 0,
                     routes: [
                       {
-                        name: 'DockPracticeView',
-                        params: {dock, selectedCardIndex: idx},
+                        name: 'DeckPracticeView',
+                        params: {deck, selectedCardId: card.id},
                       },
                     ],
                   });

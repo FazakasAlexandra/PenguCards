@@ -11,15 +11,21 @@ import FlipCard from 'react-native-flip-card';
 import Swiper from 'react-native-deck-swiper';
 import {Card as CardT} from '../types/Card';
 
-type DockPracticeViewProps = NativeStackScreenProps<
+type DeckPracticeViewProps = NativeStackScreenProps<
   RootStackParamList,
-  'DockPracticeView'
+  'DeckPracticeView'
 >;
 
-const DockPracticeView = ({route, navigation}: DockPracticeViewProps) => {
-  const cards = route.params.dock.cards;
+const DeckPracticeView = ({route, navigation}: DeckPracticeViewProps) => {
+  const getSelectedCardIndex = () => {
+    const selectedCardId = route.params.selectedCardId;
+    const cardIndex = cards.findIndex(card => card.id === selectedCardId);
+    return cardIndex !== -1 ? cardIndex : 0;
+  };
+
+  const cards = route.params.deck.cards;
   const [currentCardIndex, setCurrentCardIndex] = React.useState<number>(
-    route.params.selectedCardIndex || 0,
+    getSelectedCardIndex(),
   );
   const [mode, setMode] = React.useState<'front' | 'back' | 'hint'>('front');
   const [swipeDirection, setSwipeDirection] = React.useState<
@@ -36,7 +42,7 @@ const DockPracticeView = ({route, navigation}: DockPracticeViewProps) => {
 
   useEffect(() => {
     if (currentCardIndex >= cards.length) {
-      navigation.navigate('DockCompletedView', {dock: route.params.dock});
+      navigation.navigate('DeckCompletedView', {deck: route.params.deck});
     }
   }, [currentCardIndex, cards.length, navigation]);
 
@@ -145,11 +151,14 @@ const DockPracticeView = ({route, navigation}: DockPracticeViewProps) => {
           ref={ref => {
             ref?.forceUpdate();
           }}
-          onSwiping={changeSwipeDirection}
+          backgroundColor="transparent"
           containerStyle={{flex: 1}}
           cards={cards}
           swipeBackCard={true}
           cardIndex={currentCardIndex}
+          onSwipedLeft={onSwipe}
+          onSwipedRight={onSwipe}
+          onSwiping={changeSwipeDirection}
           renderCard={card => {
             return (
               <>
@@ -198,9 +207,6 @@ const DockPracticeView = ({route, navigation}: DockPracticeViewProps) => {
               </>
             );
           }}
-          onSwipedLeft={onSwipe}
-          onSwipedRight={onSwipe}
-          backgroundColor="transparent"
         />
         {getNextCardIndex() >= cards.length ? null : <NextCard />}
       </Layout>
@@ -208,4 +214,4 @@ const DockPracticeView = ({route, navigation}: DockPracticeViewProps) => {
   );
 };
 
-export default DockPracticeView;
+export default DeckPracticeView;

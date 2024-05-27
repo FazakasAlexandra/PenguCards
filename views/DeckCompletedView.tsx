@@ -7,23 +7,23 @@ import {Text, Layout, Button} from '@ui-kitten/components';
 import {NativeStackScreenProps} from '@react-navigation/native-stack';
 import {RootStackParamList} from '../types/Navigation';
 
-type DockCompletedViewProps = NativeStackScreenProps<
+type DeckCompletedViewProps = NativeStackScreenProps<
   RootStackParamList,
-  'DockCompletedView'
+  'DeckCompletedView'
 >;
 
-const DockCompletedView: React.FC<DockCompletedViewProps> = ({
+const DeckCompletedView: React.FC<DeckCompletedViewProps> = ({
   route,
   navigation,
-}: DockCompletedViewProps) => {
-  const goDocks = () => {
+}: DeckCompletedViewProps) => {
+  const goDecks = () => {
     navigation.navigate('Home');
   };
 
   const goAgain = () => {
     navigation.reset({
       index: 0,
-      routes: [{name: 'DockPracticeView', params: {dock: route.params.dock}}],
+      routes: [{name: 'DeckPracticeView', params: {deck: route.params.deck}}],
     });
   };
 
@@ -56,10 +56,10 @@ const DockCompletedView: React.FC<DockCompletedViewProps> = ({
             </Text>
           </>
         </Button>
-        <Button onPress={goDocks}>
+        <Button onPress={goDecks}>
           <>
             <Text category="s1" style={{marginRight: 10}}>
-              Go docks
+              Go decks
             </Text>
             <BackRight />
           </>
@@ -69,4 +69,4 @@ const DockCompletedView: React.FC<DockCompletedViewProps> = ({
   );
 };
 
-export default DockCompletedView;
+export default DeckCompletedView;

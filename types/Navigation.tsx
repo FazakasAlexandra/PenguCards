@@ -1,8 +1,8 @@
-import {Dock} from './Dock';
+import {Deck} from './Deck';
 
 export type RootStackParamList = {
   Home: undefined;
-  CardsList: Dock;
-  DockPracticeView: {dock: Dock; selectedCardIndex?: number};
-  DockCompletedView: {dock: Dock};
+  CardsList: Deck;
+  DeckPracticeView: {deck: Deck; selectedCardId?: string};
+  DeckCompletedView: {deck: Deck};
 };

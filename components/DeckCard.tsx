@@ -47,12 +47,12 @@ const CardFooter = ({
   );
 };
 
-const DockCard = ({
-  dock,
+const DeckCard = ({
+  deck,
   navigateToCardsList,
 }: {
   navigateToCardsList: () => void;
-  dock: {
+  deck: {
     title: string;
     cardsCount: number;
   };
@@ -64,12 +64,12 @@ const DockCard = ({
         marginBottom: 12,
       }}
       footer={<CardFooter navigateToCardsList={navigateToCardsList} />}>
-      <Text category="s1">{dock.title}</Text>
+      <Text category="s1">{deck.title}</Text>
       <Text category="p2" style={{marginTop: 4}}>
-        {dock.cardsCount} cards
+        {deck.cardsCount} cards
       </Text>
     </Card>
   );
 };
 
-export default DockCard;
+export default DeckCard;

@@ -1,6 +1,6 @@
 import {Card} from './Card';
 
-export type Dock = {
+export type Deck = {
   id: string;
   title: string;
   cards: Card[];

@@ -1,11 +1,11 @@
 import {Layout, Text} from '@ui-kitten/components';
-import DockCard from '../components/DockCard';
+import DeckCard from '../components/DeckCard';
 import Controller from '../components/Controller';
 import LogoHeader from '../components/LogoHeader';
 import React, {useEffect} from 'react';
 import {ScrollView, View} from 'react-native';
 import Dice from '../assets/icons/dice.svg';
-import {Dock} from '../types/Dock';
+import {Deck} from '../types/Deck';
 import {
   getDocs,
   collection,
@@ -15,30 +15,30 @@ import {
 } from 'firebase/firestore';
 import db from '../firebaseConfig';
 
-const DockView = ({navigation}: {navigation: any}) => {
-  const [docks, setDocks] = React.useState<Dock[]>([]);
-  const [filteredDocks, setFilteredDocks] = React.useState<Dock[]>([]);
+const DeckView = ({navigation}: {navigation: any}) => {
+  const [decks, setDecks] = React.useState<Deck[]>([]);
+  const [filteredDecks, setFilteredDecks] = React.useState<Deck[]>([]);
 
   useEffect(() => {
     (async () => {
-      const docks = await getDocks();
-      setDocks(docks);
-      setFilteredDocks(docks);
+      const decks = await getDecks();
+      setDecks(decks);
+      setFilteredDecks(decks);
     })();
   }, []);
 
-  const getDocks = async (): Promise<Dock[]> => {
+  const getDecks = async (): Promise<Deck[]> => {
     try {
-      const docksCollection: CollectionReference<DocumentData> = collection(
+      const decksCollection: CollectionReference<DocumentData> = collection(
         db,
         'docks',
       );
-      const docksSnapshot: QuerySnapshot<DocumentData> = await getDocs(
-        docksCollection,
+      const decksSnapshot: QuerySnapshot<DocumentData> = await getDocs(
+        decksCollection,
       );
-      return docksSnapshot.docs.map(doc => {
-        const dock = doc.data();
-        return {...dock, id: doc.id, cardsCount: dock.cards.length} as Dock;
+      return decksSnapshot.docs.map(doc => {
+        const deck = doc.data();
+        return {...deck, id: doc.id, cardsCount: deck.cards.length} as Deck;
       });
     } catch (error) {
       console.error('Error getting collection: ', error);
@@ -50,15 +50,15 @@ const DockView = ({navigation}: {navigation: any}) => {
     <View style={{flex: 1}}>
       <LogoHeader />
       <Controller
-        controlls="dock"
-        title="Docks"
-        counter={docks.length}
-        resetFilter={() => setFilteredDocks(docks)}
+        controlls="deck"
+        title="Decks"
+        counter={decks.length}
+        resetFilter={() => setFilteredDecks(decks)}
         filterCards={(searchTerm: string) => {
-          const newCards = docks.filter(docks =>
-            docks.title.toLowerCase().includes(searchTerm.toLowerCase()),
+          const newCards = decks.filter(decks =>
+            decks.title.toLowerCase().includes(searchTerm.toLowerCase()),
           );
-          setFilteredDocks(newCards);
+          setFilteredDecks(newCards);
         }}
       />
       <ScrollView
@@ -67,16 +67,16 @@ const DockView = ({navigation}: {navigation: any}) => {
         <Layout
           level="3"
           style={{flex: 1, paddingLeft: 12, paddingRight: 12, paddingTop: 12}}>
-          {(filteredDocks.length &&
-            filteredDocks.map(dock => (
-              <DockCard
-                dock={dock}
-                key={dock.id}
+          {(filteredDecks.length &&
+            filteredDecks.map(deck => (
+              <DeckCard
+                deck={deck}
+                key={deck.id}
                 navigateToCardsList={() => {
-                  navigation.navigate('CardsList', dock);
+                  navigation.navigate('CardsList', deck);
                 }}
               />
-            ))) || <Text>Dock not found.</Text>}
+            ))) || <Text>Deck not found.</Text>}
         </Layout>
       </ScrollView>
       <Layout
@@ -102,4 +102,4 @@ const DockView = ({navigation}: {navigation: any}) => {
   );
 };
 
-export default DockView;
+export default DeckView;
