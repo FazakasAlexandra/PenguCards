@@ -6,14 +6,7 @@ import React, {useEffect} from 'react';
 import {ScrollView, View} from 'react-native';
 import Dice from '../assets/icons/dice.svg';
 import {Deck} from '../types/Deck';
-import {
-  getDocs,
-  collection,
-  DocumentData,
-  CollectionReference,
-  QuerySnapshot,
-} from 'firebase/firestore';
-import db from '../firebaseConfig';
+const SQLite = require('react-native-sqlite-storage')
 
 const DeckView = ({navigation}: {navigation: any}) => {
   const [decks, setDecks] = React.useState<Deck[]>([]);
@@ -27,22 +20,11 @@ const DeckView = ({navigation}: {navigation: any}) => {
     })();
   }, []);
 
-  const getDecks = async (): Promise<Deck[]> => {
+  const getDecks = async () => {
     try {
-      const decksCollection: CollectionReference<DocumentData> = collection(
-        db,
-        'docks',
-      );
-      const decksSnapshot: QuerySnapshot<DocumentData> = await getDocs(
-        decksCollection,
-      );
-      return decksSnapshot.docs.map(doc => {
-        const deck = doc.data();
-        return {...deck, id: doc.id, cardsCount: deck.cards.length} as Deck;
-      });
+
     } catch (error) {
-      console.error('Error getting collection: ', error);
-      return [];
+
     }
   };
 
