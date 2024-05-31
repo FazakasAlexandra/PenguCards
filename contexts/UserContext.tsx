@@ -1,6 +1,6 @@
 import React, {createContext, useContext, useState, ReactNode} from 'react';
-import {User} from '../types/User';
-import {getUser} from '../services/db.ts';
+import {User} from '../types/User.tsx';
+import {getUser} from '../services/databaseService';
 
 interface UserContextProps {
   user: User | null;

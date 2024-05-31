@@ -6,27 +6,17 @@ import React, {useEffect} from 'react';
 import {ScrollView, View} from 'react-native';
 import Dice from '../assets/icons/dice.svg';
 import {Deck} from '../types/Deck';
-const SQLite = require('react-native-sqlite-storage')
+import {useDecks} from '../contexts/DeckContext';
 
 const DeckView = ({navigation}: {navigation: any}) => {
-  const [decks, setDecks] = React.useState<Deck[]>([]);
+  const {decks, fetchDecksByUser} = useDecks();
   const [filteredDecks, setFilteredDecks] = React.useState<Deck[]>([]);
 
   useEffect(() => {
-    (async () => {
-      const decks = await getDecks();
-      setDecks(decks);
-      setFilteredDecks(decks);
-    })();
+    const userId = 1;
+    fetchDecksByUser(userId);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
-
-  const getDecks = async () => {
-    try {
-
-    } catch (error) {
-
-    }
-  };
 
   return (
     <View style={{flex: 1}}>

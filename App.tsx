@@ -17,42 +17,45 @@ import {RootStackParamList} from './types/Navigation';
 import CardsList from './views/CardsList';
 import DeckPracticeView from './views/DeckPracticeView';
 import DeckCompletedView from './views/DeckCompletedView';
+import {ContextProviders} from './ContextProviders';
 
 const App: React.FC = () => {
   // const isDarkMode = useColorScheme() === 'dark';
   const Stack = createNativeStackNavigator<RootStackParamList>();
   return (
-    <NavigationContainer>
-      <IconRegistry icons={EvaIconsPack} />
-      <ApplicationProvider {...eva} theme={{...eva.light, ...theme}}>
-        <Stack.Navigator
-          initialRouteName="Home" // Add this to set initial screen
-          screenOptions={{
-            headerShown: false,
-          }}>
-          <Stack.Screen
-            name="Home"
-            component={DeckView}
-            options={{title: 'Home'}}
-          />
-          <Stack.Screen
-            name="CardsList"
-            component={CardsList}
-            options={{title: 'CardsList'}}
-          />
-          <Stack.Screen
-            name="DeckPracticeView"
-            component={DeckPracticeView}
-            options={{title: 'DeckPracticeView'}}
-          />
-          <Stack.Screen
-            name="DeckCompletedView"
-            component={DeckCompletedView}
-            options={{title: 'DeckCompletedView'}}
-          />
-        </Stack.Navigator>
-      </ApplicationProvider>
-    </NavigationContainer>
+    <ContextProviders>
+      <NavigationContainer>
+        <IconRegistry icons={EvaIconsPack} />
+        <ApplicationProvider {...eva} theme={{...eva.light, ...theme}}>
+          <Stack.Navigator
+            initialRouteName="Home" // Add this to set initial screen
+            screenOptions={{
+              headerShown: false,
+            }}>
+            <Stack.Screen
+              name="Home"
+              component={DeckView}
+              options={{title: 'Home'}}
+            />
+            <Stack.Screen
+              name="CardsList"
+              component={CardsList}
+              options={{title: 'CardsList'}}
+            />
+            <Stack.Screen
+              name="DeckPracticeView"
+              component={DeckPracticeView}
+              options={{title: 'DeckPracticeView'}}
+            />
+            <Stack.Screen
+              name="DeckCompletedView"
+              component={DeckCompletedView}
+              options={{title: 'DeckCompletedView'}}
+            />
+          </Stack.Navigator>
+        </ApplicationProvider>
+      </NavigationContainer>
+    </ContextProviders>
   );
 };
 
