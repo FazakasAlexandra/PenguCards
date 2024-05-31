@@ -4,28 +4,12 @@ import {
   SQLiteDatabase,
 } from 'react-native-sqlite-storage';
 
+import {User} from '../types/User';
+import {Deck} from '../types/Deck';
+import {Card} from '../types/Card';
+
 // Enable promise for SQLite
 enablePromise(true);
-
-type User = {
-  id: number; // Primary key, auto-incremented
-  name: string; // Non-null text
-  email: string; // Text, can be null
-};
-
-type Deck = {
-  id: number;
-  name: string;
-  user_id: number | null; // Foreign key referencing User.id, can be null
-};
-
-type Card = {
-  id: number; // Primary key, auto-incremented
-  front: string; // Non-null text
-  back: string; // Non-null text
-  hint: string | null; // Text, can be null
-  deck_id: number; // Foreign key referencing Deck.id
-};
 
 export const connectToDatabase = async (): Promise<SQLiteDatabase> => {
   return new Promise((resolve, reject) => {
@@ -64,7 +48,7 @@ export const createTables = async (db: SQLiteDatabase) => {
   const deckQuery = `
     CREATE TABLE IF NOT EXISTS Deck (
       id INTEGER PRIMARY KEY AUTOINCREMENT,
-      name TEXT NOT NULL,
+      title TEXT NOT NULL,
       user_id INTEGER,
       FOREIGN KEY (user_id) REFERENCES User(id) ON DELETE CASCADE
     )`;
@@ -74,6 +58,7 @@ export const createTables = async (db: SQLiteDatabase) => {
       front TEXT NOT NULL,
       back TEXT NOT NULL,
       hint TEXT,
+      image TEXT,
       deck_id INTEGER,
       FOREIGN KEY (deck_id) REFERENCES Deck(id) ON DELETE CASCADE
     )`;
@@ -88,7 +73,8 @@ export const createTables = async (db: SQLiteDatabase) => {
   }
 };
 
-// Functions to add User, Deck, and Card
+// CREATE functions
+
 export const addUser = async (db: SQLiteDatabase, user: User) => {
   const insertQuery = `
       INSERT INTO User (name, email)
@@ -119,10 +105,10 @@ export const addDeck = async (db: SQLiteDatabase, deck: Deck) => {
   }
 
   const insertQuery = `
-      INSERT INTO Deck (name, user_id)
+      INSERT INTO Deck (title, user_id)
       VALUES (?, ?)
   `;
-  const values = [deck.name, deck.user_id];
+  const values = [deck.title, deck.user_id];
   try {
     return await db.executeSql(insertQuery, values);
   } catch (error) {
@@ -147,10 +133,10 @@ export const addCard = async (db: SQLiteDatabase, card: Card) => {
   }
 
   const insertQuery = `
-      INSERT INTO Card (front, back, hint, deck_id)
-      VALUES (?, ?, ?, ?)
+      INSERT INTO Card (image, front, back, hint, deck_id)
+      VALUES (?, ?, ?, ?, ?)
   `;
-  const values = [card.front, card.back, card.hint, card.deck_id];
+  const values = [card.image, card.front, card.back, card.hint, card.deck_id];
   try {
     return await db.executeSql(insertQuery, values);
   } catch (error) {
@@ -158,6 +144,8 @@ export const addCard = async (db: SQLiteDatabase, card: Card) => {
     throw new Error('Failed to add card');
   }
 };
+
+// UPDATE functions
 
 export const updateUser = async (db: SQLiteDatabase, user: User) => {
   const updateQuery = `
@@ -191,10 +179,10 @@ export const updateDeck = async (db: SQLiteDatabase, deck: Deck) => {
 
   const updateQuery = `
     UPDATE Deck
-    SET name = ?, user_id = ?
+    SET title = ?, user_id = ?
     WHERE id = ?
   `;
-  const values = [deck.name, deck.user_id, deck.id];
+  const values = [deck.title, deck.user_id, deck.id];
   try {
     return await db.executeSql(updateQuery, values);
   } catch (error) {
@@ -220,10 +208,17 @@ export const updateCard = async (db: SQLiteDatabase, card: Card) => {
 
   const updateQuery = `
     UPDATE Card
-    SET front = ?, back = ?, hint = ?, deck_id = ?
+    SET image = ?, front = ?, back = ?, hint = ?, deck_id = ?
     WHERE id = ?
   `;
-  const values = [card.front, card.back, card.hint, card.deck_id, card.id];
+  const values = [
+    card.image,
+    card.front,
+    card.back,
+    card.hint,
+    card.deck_id,
+    card.id,
+  ];
   try {
     return await db.executeSql(updateQuery, values);
   } catch (error) {
@@ -231,6 +226,8 @@ export const updateCard = async (db: SQLiteDatabase, card: Card) => {
     throw new Error('Failed to update card');
   }
 };
+
+// DELETE functions
 
 export const deleteUser = async (db: SQLiteDatabase, userId: number) => {
   const deleteQuery = `
@@ -271,27 +268,106 @@ export const deleteCard = async (db: SQLiteDatabase, cardId: number) => {
   }
 };
 
+// READ functions
+export const getUser = async (id: number): Promise<User | null> => {
+  const db = await connectToDatabase();
+  const query = 'SELECT * FROM User WHERE id = ?';
+  try {
+    const results = await db.executeSql(query, [id]);
+    if (results[0].rows.length > 0) {
+      return results[0].rows.item(0);
+    }
+    return null;
+  } catch (error) {
+    console.error('Failed to fetch user', error);
+    throw new Error('Failed to fetch user');
+  }
+};
+
+export const getDeck = async (id: number): Promise<Deck | null> => {
+  const db = await connectToDatabase();
+  const query = 'SELECT * FROM Deck WHERE id = ?';
+  try {
+    const results = await db.executeSql(query, [id]);
+    if (results[0].rows.length > 0) {
+      return results[0].rows.item(0);
+    }
+    return null;
+  } catch (error) {
+    console.error('Failed to fetch deck', error);
+    throw new Error('Failed to fetch deck');
+  }
+};
+
+export const getDecksByUser = async (userId: number): Promise<Deck[]> => {
+  const db = await connectToDatabase();
+  const query = 'SELECT * FROM Deck WHERE user_id = ?';
+  try {
+    const results = await db.executeSql(query, [userId]);
+    const decks: Deck[] = [];
+    for (let i = 0; i < results[0].rows.length; i++) {
+      decks.push(results[0].rows.item(i));
+    }
+    return decks;
+  } catch (error) {
+    console.error('Failed to fetch decks', error);
+    throw new Error('Failed to fetch decks');
+  }
+};
+
+export const getCardsByDeck = async (deckId: number): Promise<Card[]> => {
+  const db = await connectToDatabase();
+  const query = 'SELECT * FROM Card WHERE deck_id = ?';
+  try {
+    const results = await db.executeSql(query, [deckId]);
+    const cards: Card[] = [];
+    for (let i = 0; i < results[0].rows.length; i++) {
+      cards.push(results[0].rows.item(i));
+    }
+    return cards;
+  } catch (error) {
+    console.error('Failed to fetch cards', error);
+    throw new Error('Failed to fetch cards');
+  }
+};
+
+export const getCard = async (id: number): Promise<Card | null> => {
+  const db = await connectToDatabase();
+  const query = 'SELECT * FROM Card WHERE id = ?';
+  try {
+    const results = await db.executeSql(query, [id]);
+    if (results[0].rows.length > 0) {
+      return results[0].rows.item(0);
+    }
+    return null;
+  } catch (error) {
+    console.error('Failed to fetch card', error);
+    throw new Error('Failed to fetch card');
+  }
+};
+
 // generate and insert filler data
 export const generateFillerData = async (db: SQLiteDatabase) => {
   const user: User = {id: 1, name: 'John Doe', email: 'john.doe@example.com'};
 
   const decks: Deck[] = [
-    {id: 1, name: 'Deck 1', user_id: user.id},
-    {id: 2, name: 'Deck 2', user_id: user.id},
-    {id: 3, name: 'Deck 3', user_id: user.id},
+    {id: 1, title: 'Deck 1', user_id: user.id, cards: [], cardsCount: 0},
+    {id: 2, title: 'Deck 2', user_id: user.id, cards: [], cardsCount: 0},
+    {id: 3, title: 'Deck 3', user_id: user.id, cards: [], cardsCount: 0},
   ];
 
   const cards: Card[] = [];
 
   for (let deck of decks) {
     for (let i = 1; i <= 20; i++) {
-      cards.push({
+      const dummyCard = {
         id: i,
-        front: `Front text for card ${i} in ${deck.name}`,
-        back: `Back text for card ${i} in ${deck.name}`,
-        hint: `Hint for card ${i} in ${deck.name}`,
+        front: `Front text for card ${i} in ${deck.title}`,
+        back: `Back text for card ${i} in ${deck.title}`,
+        hint: `Hint for card ${i} in ${deck.title}`,
         deck_id: deck.id,
-      });
+      };
+      cards.push(dummyCard);
     }
   }
 

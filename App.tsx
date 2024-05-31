@@ -18,7 +18,7 @@ import CardsList from './views/CardsList';
 import DeckPracticeView from './views/DeckPracticeView';
 import DeckCompletedView from './views/DeckCompletedView';
 
-function App(): React.JSX.Element {
+const App: React.FC = () => {
   // const isDarkMode = useColorScheme() === 'dark';
   const Stack = createNativeStackNavigator<RootStackParamList>();
   return (
@@ -54,6 +54,6 @@ function App(): React.JSX.Element {
       </ApplicationProvider>
     </NavigationContainer>
   );
-}
+};
 
 export default App;
