@@ -61,7 +61,6 @@ const Controller = ({
               name="close-outline"
               onPress={() => {
                 setSearchTerm('');
-                resetFilter();
               }}
             />
           )) ||
