@@ -7,17 +7,16 @@ import {
 import {User} from '../types/User';
 import {Deck} from '../types/Deck';
 import {Card} from '../types/Card';
-import { create } from 'react-test-renderer';
 
 export const connectToDatabase = async () => {
   return openDatabase(
-    { name: 'pengucards.db', location: 'default' },
+    {name: 'pengucards.db', location: 'default'},
     () => {},
-    (error) => {
-      console.error(error)
-      throw Error("Could not connect to database")
-    }
-  )
+    error => {
+      console.error(error);
+      throw Error('Could not connect to database');
+    },
+  );
 };
 
 export const createTables = async (db: SQLiteDatabase) => {
@@ -59,13 +58,10 @@ export const createTables = async (db: SQLiteDatabase) => {
 // CREATE functions
 
 export const addUser = async (db: SQLiteDatabase, user: User) => {
-  const addNewUser = `
-      INSERT INTO User (name, email)
-      VALUES (?, ?)
-  `;
-  const values = [user.name, user.email];
   try {
-    return await db.executeSql(addNewUser, values);
+    return await db.executeSql(
+      `INSERT INTO User (name, email) VALUES ('${user.name}', '${user.email}')`,
+    );
   } catch (error) {
     console.error(error);
     throw new Error('Failed to add user');
@@ -74,11 +70,10 @@ export const addUser = async (db: SQLiteDatabase, user: User) => {
 
 export const addDeck = async (db: SQLiteDatabase, deck: Deck) => {
   // Ensure the referenced user_id exists
-  const userQuery = `
-      SELECT id FROM User WHERE id = ?
-  `;
   try {
-    const result = await db.executeSql(userQuery, [deck.user_id]);
+    const result = await db.executeSql(
+      `SELECT id FROM User WHERE id = ${deck.user_id}`,
+    );
     if (result[0].rows.length === 0) {
       throw new Error(`User with id ${deck.user_id} does not exist`);
     }
@@ -86,14 +81,11 @@ export const addDeck = async (db: SQLiteDatabase, deck: Deck) => {
     console.error(error);
     throw new Error('Failed to verify user_id for deck');
   }
-
-  const addNewDeck = `
-      INSERT INTO Deck (title, user_id, cards_count)
-      VALUES (?, ?, ?)
-  `;
-  const values = [deck.title, deck.user_id, 0];
   try {
-    return await db.executeSql(addNewDeck, values);
+    return await db.executeSql(
+      `INSERT INTO Deck (title, user_id, cards_count) 
+      VALUES (${deck.title}, ${deck.user_id}, 0)`,
+    );
   } catch (error) {
     console.error(error);
     throw new Error('Failed to add deck');
@@ -102,11 +94,10 @@ export const addDeck = async (db: SQLiteDatabase, deck: Deck) => {
 
 export const addCard = async (db: SQLiteDatabase, card: Card) => {
   // Ensure the referenced deck_id exists
-  const deckQuery = `
-      SELECT id FROM Deck WHERE id = ?
-  `;
   try {
-    const result = await db.executeSql(deckQuery, [card.deck_id]);
+    const result = await db.executeSql(
+      `SELECT id FROM Deck WHERE id = ${card.deck_id}`,
+    );
     if (result[0].rows.length === 0) {
       throw new Error(`Deck with id ${card.deck_id} does not exist`);
     }
@@ -114,23 +105,17 @@ export const addCard = async (db: SQLiteDatabase, card: Card) => {
     console.error(error);
     throw new Error('Failed to verify deck_id for card');
   }
-
-  const addNewCard = `
-      INSERT INTO Card (image, front, back, hint, deck_id)
-      VALUES (?, ?, ?, ?, ?)
-  `;
-
-  const updateCount = `
-      UPDATE Deck
-      SET cards_count = (SELECT COUNT(*) FROM Card WHERE deck_id = ?)
-  `;
-
-  const values = [card.image, card.front, card.back, card.hint, card.deck_id];
-
   try {
     return await db.transaction(tx => {
-      tx.executeSql(addNewCard, values);
-      tx.executeSql(updateCount, [card.deck_id]);
+      tx.executeSql(
+        `INSERT INTO Card (image, front, back, hint, deck_id) 
+        VALUES ('${card.image}', '${card.front}', '${card.back}', '${card.hint}', ${card.deck_id}`,
+      );
+      tx.executeSql(
+        `UPDATE Deck 
+        SET cards_count = (SELECT COUNT(*) FROM Card 
+        WHERE deck_id = ${card.deck_id})`,
+      );
     });
   } catch (error) {
     console.error(error);
@@ -141,14 +126,12 @@ export const addCard = async (db: SQLiteDatabase, card: Card) => {
 // UPDATE functions
 
 export const updateUser = async (db: SQLiteDatabase, user: User) => {
-  const updateQuery = `
-    UPDATE User
-    SET name = ?, email = ?
-    WHERE id = ?
-  `;
-  const values = [user.name, user.email, user.id];
   try {
-    return await db.executeSql(updateQuery, values);
+    return await db.executeSql(
+      `UPDATE User 
+      SET name = '${user.name}', email = '${user.email}' 
+      WHERE id = ${user.id}`,
+    );
   } catch (error) {
     console.error(error);
     throw new Error('Failed to update user');
@@ -157,11 +140,10 @@ export const updateUser = async (db: SQLiteDatabase, user: User) => {
 
 export const updateDeck = async (db: SQLiteDatabase, deck: Deck) => {
   // Ensure the referenced user_id exists
-  const userQuery = `
-    SELECT id FROM User WHERE id = ?
-  `;
   try {
-    const result = await db.executeSql(userQuery, [deck.user_id]);
+    const result = await db.executeSql(
+      `SELECT id FROM User WHERE id = ${deck.user_id}`,
+    );
     if (result[0].rows.length === 0) {
       throw new Error(`User with id ${deck.user_id} does not exist`);
     }
@@ -169,15 +151,12 @@ export const updateDeck = async (db: SQLiteDatabase, deck: Deck) => {
     console.error(error);
     throw new Error('Failed to verify user_id for deck');
   }
-
-  const updateQuery = `
-    UPDATE Deck
-    SET title = ?, user_id = ?
-    WHERE id = ?
-  `;
-  const values = [deck.title, deck.user_id, deck.id];
   try {
-    return await db.executeSql(updateQuery, values);
+    return await db.executeSql(
+      `UPDATE Deck 
+      SET title = '${deck.title}', user_id = '${deck.user_id}' 
+      WHERE id = ${deck.id}`,
+    );
   } catch (error) {
     console.error(error);
     throw new Error('Failed to update deck');
@@ -186,11 +165,10 @@ export const updateDeck = async (db: SQLiteDatabase, deck: Deck) => {
 
 export const updateCard = async (db: SQLiteDatabase, card: Card) => {
   // Ensure the referenced deck_id exists
-  const deckQuery = `
-    SELECT id FROM Deck WHERE id = ?
-  `;
   try {
-    const result = await db.executeSql(deckQuery, [card.deck_id]);
+    const result = await db.executeSql(
+      `SELECT id FROM Deck WHERE id = ${card.deck_id}`,
+    );
     if (result[0].rows.length === 0) {
       throw new Error(`Deck with id ${card.deck_id} does not exist`);
     }
@@ -198,22 +176,12 @@ export const updateCard = async (db: SQLiteDatabase, card: Card) => {
     console.error(error);
     throw new Error('Failed to verify deck_id for card');
   }
-
-  const updateCard = `
-    UPDATE Card
-    SET image = ?, front = ?, back = ?, hint = ?, deck_id = ?
-    WHERE id = ?
-  `;
-  const values = [
-    card.image,
-    card.front,
-    card.back,
-    card.hint,
-    card.deck_id,
-    card.id,
-  ];
   try {
-    return await db.executeSql(updateCard, values);
+    return await db.executeSql(
+      `UPDATE Card 
+      SET image = '${card.image}', front = '${card.front}', back = '${card.back}', hint = '${card.hint}', deck_id = ${card.deck_id} 
+      WHERE id = ${card.id}`,
+    );
   } catch (error) {
     console.error(error);
     throw new Error('Failed to update card');
@@ -223,12 +191,8 @@ export const updateCard = async (db: SQLiteDatabase, card: Card) => {
 // DELETE functions
 
 export const deleteUser = async (db: SQLiteDatabase, userId: number) => {
-  const deleteQuery = `
-    DELETE FROM User
-    WHERE id = ?
-  `;
   try {
-    return await db.executeSql(deleteQuery, [userId]);
+    return await db.executeSql(`DELETE FROM User WHERE id = ${userId}`);
   } catch (error) {
     console.error(error);
     throw new Error('Failed to delete user');
@@ -236,12 +200,8 @@ export const deleteUser = async (db: SQLiteDatabase, userId: number) => {
 };
 
 export const deleteDeck = async (db: SQLiteDatabase, deckId: number) => {
-  const deleteQuery = `
-    DELETE FROM Deck
-    WHERE id = ?
-  `;
   try {
-    return await db.executeSql(deleteQuery, [deckId]);
+    return await db.executeSql(`DELETE FROM Deck WHERE id = ${deckId}`);
   } catch (error) {
     console.error(error);
     throw new Error('Failed to delete deck');
@@ -249,12 +209,8 @@ export const deleteDeck = async (db: SQLiteDatabase, deckId: number) => {
 };
 
 export const deleteCard = async (db: SQLiteDatabase, cardId: number) => {
-  const deleteQuery = `
-    DELETE FROM Card
-    WHERE id = ?
-  `;
   try {
-    return await db.executeSql(deleteQuery, [cardId]);
+    return await db.executeSql(`DELETE FROM Card WHERE id = ${cardId}`);
   } catch (error) {
     console.error(error);
     throw new Error('Failed to delete card');
@@ -262,11 +218,12 @@ export const deleteCard = async (db: SQLiteDatabase, cardId: number) => {
 };
 
 // READ functions
-export const getUser = async (id: number): Promise<User | null> => {
+export const getUser = async (userId: number): Promise<User | null> => {
   const db = await connectToDatabase();
-  const query = 'SELECT * FROM User WHERE id = ?';
   try {
-    const results = await db.executeSql(query, [id]);
+    const results = await db.executeSql(
+      `SELECT * FROM User WHERE id = ${userId}`,
+    );
     if (results[0].rows.length > 0) {
       return results[0].rows.item(0);
     }
@@ -277,11 +234,12 @@ export const getUser = async (id: number): Promise<User | null> => {
   }
 };
 
-export const getDeck = async (id: number): Promise<Deck | null> => {
+export const getDeck = async (cardId: number): Promise<Deck | null> => {
   const db = await connectToDatabase();
-  const query = 'SELECT * FROM Deck WHERE id = ?';
   try {
-    const results = await db.executeSql(query, [id]);
+    const results = await db.executeSql(
+      `SELECT * FROM Deck WHERE id = ${cardId}`,
+    );
     if (results[0].rows.length > 0) {
       return results[0].rows.item(0);
     }
@@ -294,16 +252,16 @@ export const getDeck = async (id: number): Promise<Deck | null> => {
 
 export const getDecksByUser = async (userId: number): Promise<Deck[]> => {
   const db = await connectToDatabase();
-  const query = 'SELECT * FROM Deck WHERE user_id = ?';
   try {
-    const results = await db.executeSql(query, [userId]);
+    const results = await db.executeSql(
+      `SELECT * FROM Deck WHERE user_id = ${userId}`,
+    );
     const decks: Deck[] = [];
     for (let i = 0; i < results[0].rows.length; i++) {
       decks.push(results[0].rows.item(i));
     }
     return decks;
   } catch (error) {
-    console.error('Failed to fetch decks', error);
     throw new Error('Failed to fetch decks');
   }
 };
@@ -311,16 +269,16 @@ export const getDecksByUser = async (userId: number): Promise<Deck[]> => {
 export const searchDecksByTitle = async (searchString: string) => {
   try {
     const db = await connectToDatabase();
-    const query = 'SELECT * FROM Deck WHERE title LIKE ?';
-    const params = [`%${searchString}%`];
+    const query = `SELECT * FROM Deck WHERE title LIKE '%${searchString}%'`;
 
-    const results = await db.executeSql(query, params);
     const decks: Deck[] = [];
+    const results = await db.executeSql(query);
     results.forEach(result => {
       for (let i = 0; i < result.rows.length; i++) {
         decks.push(result.rows.item(i));
       }
     });
+    console.log('decks again', decks);
 
     return decks;
   } catch (error) {
@@ -331,9 +289,10 @@ export const searchDecksByTitle = async (searchString: string) => {
 
 export const getCardsByDeck = async (deckId: number): Promise<Card[]> => {
   const db = await connectToDatabase();
-  const query = 'SELECT * FROM Card WHERE deck_id = ?';
   try {
-    const results = await db.executeSql(query, [deckId]);
+    const results = await db.executeSql(
+      `SELECT * FROM Card WHERE deck_id = ${deckId}`,
+    );
     const cards: Card[] = [];
     for (let i = 0; i < results[0].rows.length; i++) {
       cards.push(results[0].rows.item(i));
@@ -347,9 +306,8 @@ export const getCardsByDeck = async (deckId: number): Promise<Card[]> => {
 
 export const getCard = async (id: number): Promise<Card | null> => {
   const db = await connectToDatabase();
-  const query = 'SELECT * FROM Card WHERE id = ?'; // deck_id
   try {
-    const results = await db.executeSql(query, [id]);
+    const results = await db.executeSql(`SELECT * FROM Card WHERE id = ${id}`);
     if (results[0].rows.length > 0) {
       return results[0].rows.item(0);
     }
@@ -362,21 +320,20 @@ export const getCard = async (id: number): Promise<Card | null> => {
 
 export const searchCardsByText = async (
   searchString: string,
-): Promise<any[]> => {
+): Promise<Card[]> => {
   try {
     const db = await connectToDatabase();
-    const query = 'SELECT * FROM Card WHERE front LIKE ? OR back LIKE ?';
-    const params = [`%${searchString}%`, `%${searchString}%`];
 
-    const results = await db.executeSql(query, params);
+    const results = await db.executeSql(
+      `SELECT * FROM Card WHERE front LIKE '%${searchString}%' OR back LIKE '%${searchString}%'`,
+    );
 
-    const cards: any[] = [];
+    const cards: Card[] = [];
     results.forEach(result => {
       for (let i = 0; i < result.rows.length; i++) {
         cards.push(result.rows.item(i));
       }
     });
-
     return cards;
   } catch (error) {
     console.error('Failed to search cards by text:', error);
@@ -388,9 +345,9 @@ export const generateFillerData = async (db: SQLiteDatabase) => {
   const user: User = {id: 1, name: 'John Doe', email: 'john.doe@example.com'};
 
   const decks: Deck[] = [
-    {id: 1, title: 'Deck 1', user_id: user.id, cardsCount: 0},
-    {id: 2, title: 'Deck 2', user_id: user.id, cardsCount: 0},
-    {id: 3, title: 'Deck 3', user_id: user.id, cardsCount: 0},
+    //{id: 1, title: 'Deck 1', user_id: user.id, cardsCount: 0},
+    // {id: 2, title: 'Deck 2', user_id: user.id, cardsCount: 0},
+    // {id: 3, title: 'Deck 3', user_id: user.id, cardsCount: 0},
   ];
 
   const cards: Card[] = [];
