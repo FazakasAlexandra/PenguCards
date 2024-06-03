@@ -84,7 +84,7 @@ export const addDeck = async (db: SQLiteDatabase, deck: Deck) => {
   try {
     return await db.executeSql(
       `INSERT INTO Deck (title, user_id, cards_count) 
-      VALUES (${deck.title}, ${deck.user_id}, 0)`,
+      VALUES ('${deck.title}', ${deck.user_id}, 0)`,
     );
   } catch (error) {
     console.error(error);
@@ -109,7 +109,7 @@ export const addCard = async (db: SQLiteDatabase, card: Card) => {
     return await db.transaction(tx => {
       tx.executeSql(
         `INSERT INTO Card (image, front, back, hint, deck_id) 
-        VALUES ('${card.image}', '${card.front}', '${card.back}', '${card.hint}', ${card.deck_id}`,
+        VALUES ('${card.image}', '${card.front}', '${card.back}', '${card.hint}', ${card.deck_id})`,
       );
       tx.executeSql(
         `UPDATE Deck 
@@ -278,7 +278,7 @@ export const searchDecksByTitle = async (searchString: string) => {
         decks.push(result.rows.item(i));
       }
     });
-    console.log('decks again', decks);
+    console.log('decks !!!!', decks);
 
     return decks;
   } catch (error) {
@@ -304,7 +304,7 @@ export const getCardsByDeck = async (deckId: number): Promise<Card[]> => {
   }
 };
 
-export const getCard = async (id: number): Promise<Card | null> => {
+export const getCardById = async (id: number): Promise<Card | null> => {
   const db = await connectToDatabase();
   try {
     const results = await db.executeSql(`SELECT * FROM Card WHERE id = ${id}`);
@@ -345,9 +345,9 @@ export const generateFillerData = async (db: SQLiteDatabase) => {
   const user: User = {id: 1, name: 'John Doe', email: 'john.doe@example.com'};
 
   const decks: Deck[] = [
-    //{id: 1, title: 'Deck 1', user_id: user.id, cardsCount: 0},
-    // {id: 2, title: 'Deck 2', user_id: user.id, cardsCount: 0},
-    // {id: 3, title: 'Deck 3', user_id: user.id, cardsCount: 0},
+    {id: 1, title: 'Deck 1', user_id: user.id, cardsCount: 0},
+    {id: 2, title: 'Deck 2', user_id: user.id, cardsCount: 0},
+    {id: 3, title: 'Deck 3', user_id: user.id, cardsCount: 0},
   ];
 
   const cards: Card[] = [];
@@ -366,15 +366,10 @@ export const generateFillerData = async (db: SQLiteDatabase) => {
   }
 
   try {
-    // Add user
     await addUser(db, user);
-
-    // Add decks
     for (let deck of decks) {
       await addDeck(db, deck);
     }
-
-    // Add cards
     for (let card of cards) {
       await addCard(db, card);
     }
@@ -389,7 +384,7 @@ export const initDatabase = async () => {
     enablePromise(true);
     await db.executeSql('PRAGMA foreign_keys = ON');
     await createTables(db);
-    await generateFillerData(db);
+    // await generateFillerData(db);
   } catch (error) {
     console.error(error);
   }

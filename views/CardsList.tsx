@@ -122,7 +122,10 @@ const CardsList = ({route, navigation}: CardsListProps) => {
                     routes: [
                       {
                         name: 'DeckPracticeView',
-                        params: {deck, selectedCardId: card.id},
+                        params: {
+                          deck,
+                          selectedCardId: card.id,
+                        },
                       },
                     ],
                   });
