@@ -6,15 +6,14 @@ import {ControllerProps} from '../types/Controller';
 const Controller = ({
   title,
   counter,
-  filterCards,
-  resetFilter,
+  sendSearchTerm,
   controlls,
 }: ControllerProps) => {
   const [searchTerm, setSearchTerm] = useState('');
 
   const handleSearchTermChange = (value: string) => {
     setSearchTerm(value);
-    filterCards(value);
+    sendSearchTerm(value);
   };
 
   return (

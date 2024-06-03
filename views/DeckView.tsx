@@ -2,21 +2,44 @@ import {Layout, Text} from '@ui-kitten/components';
 import DeckCard from '../components/DeckCard';
 import Controller from '../components/Controller';
 import LogoHeader from '../components/LogoHeader';
-import React, {useEffect} from 'react';
+import React, {useState, useEffect} from 'react';
 import {ScrollView, View} from 'react-native';
 import Dice from '../assets/icons/dice.svg';
 import {Deck} from '../types/Deck';
-import {useDecks} from '../contexts/DeckContext';
+import {getDecksByUser, searchDecksByTitle} from '../services/databaseService';
 
 const DeckView = ({navigation}: {navigation: any}) => {
-  const {decks, fetchDecksByUser} = useDecks();
-  const [filteredDecks, setFilteredDecks] = React.useState<Deck[]>([]);
+  const [decks, setDecks] = useState<Deck[]>([]);
+  const [searchTerm, setSearchTerm] = useState<string>('');
+
+  const receivedSearchTerm = (str: string) => {
+    setSearchTerm(str);
+  };
 
   useEffect(() => {
     const userId = 1;
-    fetchDecksByUser(userId);
-    // eslint-disable-next-line react-hooks/exhaustive-deps
+    const fetchDecks = async () => {
+      try {
+        const fetchedData = await getDecksByUser(userId);
+        setDecks(fetchedData);
+      } catch (error) {
+        console.error(error);
+      }
+    };
+    fetchDecks();
   }, []);
+
+  useEffect(() => {
+    const fetchDecks = async () => {
+      try {
+        const fetchedData = await searchDecksByTitle(searchTerm);
+        setDecks(fetchedData);
+      } catch (error) {
+        console.log(error);
+      }
+    };
+    fetchDecks();
+  }, [searchTerm]);
 
   return (
     <View style={{flex: 1}}>
@@ -25,13 +48,7 @@ const DeckView = ({navigation}: {navigation: any}) => {
         controlls="deck"
         title="Decks"
         counter={decks.length}
-        resetFilter={() => setFilteredDecks(decks)}
-        filterCards={(searchTerm: string) => {
-          const newCards = decks.filter(decks =>
-            decks.title.toLowerCase().includes(searchTerm.toLowerCase()),
-          );
-          setFilteredDecks(newCards);
-        }}
+        sendSearchTerm={receivedSearchTerm}
       />
       <ScrollView
         style={{flex: 1, paddingBottom: 12}}
@@ -39,8 +56,8 @@ const DeckView = ({navigation}: {navigation: any}) => {
         <Layout
           level="3"
           style={{flex: 1, paddingLeft: 12, paddingRight: 12, paddingTop: 12}}>
-          {(filteredDecks.length &&
-            filteredDecks.map(deck => (
+          {(decks.length &&
+            decks.map(deck => (
               <DeckCard
                 deck={deck}
                 key={deck.id}

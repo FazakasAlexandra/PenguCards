@@ -1,19 +1,49 @@
 import {Layout, Card, Text} from '@ui-kitten/components';
 import Controller from '../components/Controller';
 import LogoHeader from '../components/LogoHeader';
-import React from 'react';
+import React, {useEffect} from 'react';
 import {ScrollView, View} from 'react-native';
 import {Card as CardT} from '../types/Card';
 import {NativeStackScreenProps} from '@react-navigation/native-stack';
 import {RootStackParamList} from '../types/Navigation';
 import Placeholder from '../assets/icons/placeholder.svg';
+import {getCardsByDeck, searchCardsByText} from '../services/databaseService';
 
 type CardsListProps = NativeStackScreenProps<RootStackParamList, 'CardsList'>;
 
 const CardsList = ({route, navigation}: CardsListProps) => {
   const deck = route.params;
   const [searchTerm, setSearchTerm] = React.useState<string>('');
-  const [filteredCards, setFilteredCards] = React.useState<CardT[]>(deck.cards);
+  const [cards, setCards] = React.useState<CardT[]>([]);
+
+  const receivedSearchTerm = (str: string) => {
+    setSearchTerm(str);
+  };
+
+  useEffect(() => {
+    const deckId = deck.id;
+    const fetchCards = async () => {
+      try {
+        const fetchedData = await getCardsByDeck(deckId);
+        setCards(fetchedData);
+      } catch (error) {
+        console.error(error);
+      }
+    };
+    fetchCards();
+  }, [deck.id]);
+
+  useEffect(() => {
+    const fetchCards = async () => {
+      try {
+        const fetchedData = await searchCardsByText(searchTerm);
+        setCards(fetchedData);
+      } catch (error) {
+        console.log(error);
+      }
+    };
+    fetchCards();
+  }, [searchTerm]);
 
   const splitText = (text: string) =>
     text.split(new RegExp(`(${searchTerm})`, 'gi'));
@@ -67,16 +97,7 @@ const CardsList = ({route, navigation}: CardsListProps) => {
         controlls="cards"
         title={deck.title}
         counter={deck.cardsCount}
-        resetFilter={() => {}}
-        filterCards={(searchTerm: string) => {
-          const filtered = deck.cards.filter(
-            card =>
-              card.front.toLowerCase().includes(searchTerm.toLowerCase()) ||
-              card.back.toLowerCase().includes(searchTerm.toLowerCase()),
-          );
-          setSearchTerm(searchTerm);
-          setFilteredCards(filtered);
-        }}
+        sendSearchTerm={receivedSearchTerm}
       />
       <ScrollView
         style={{flex: 1, paddingBottom: 12}}
@@ -92,10 +113,8 @@ const CardsList = ({route, navigation}: CardsListProps) => {
             justifyContent: 'space-between',
             alignItems: 'center',
           }}>
-          {(searchTerm && !filteredCards.length && (
-            <Text>No cards found.</Text>
-          )) ||
-            filteredCards.map((card: CardT, idx) => (
+          {(searchTerm && !cards.length && <Text>No cards found.</Text>) ||
+            cards.map((card: CardT, idx) => (
               <Card
                 onPress={() => {
                   navigation.reset({
