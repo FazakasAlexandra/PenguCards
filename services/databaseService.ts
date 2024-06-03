@@ -7,35 +7,17 @@ import {
 import {User} from '../types/User';
 import {Deck} from '../types/Deck';
 import {Card} from '../types/Card';
+import { create } from 'react-test-renderer';
 
-// Enable promise for SQLite
-enablePromise(true);
-
-export const connectToDatabase = async (): Promise<SQLiteDatabase> => {
-  return new Promise((resolve, reject) => {
-    const db = openDatabase(
-      {name: 'pengucards.db', location: 'default'},
-      () => {
-        // Enable foreign key constraints
-        db.executeSql(
-          'PRAGMA foreign_keys = ON;',
-          [],
-          () => {
-            console.log('Foreign keys enabled.');
-            resolve(db);
-          },
-          error => {
-            console.error('Error enabling foreign keys', error);
-            reject(new Error('Error enabling foreign keys'));
-          },
-        );
-      },
-      error => {
-        console.error(error);
-        reject(new Error('Could not connect to database'));
-      },
-    );
-  });
+export const connectToDatabase = async () => {
+  return openDatabase(
+    { name: 'pengucards.db', location: 'default' },
+    () => {},
+    (error) => {
+      console.error(error)
+      throw Error("Could not connect to database")
+    }
+  )
 };
 
 export const createTables = async (db: SQLiteDatabase) => {
@@ -402,7 +384,6 @@ export const searchCardsByText = async (
   }
 };
 
-// generate and insert filler data
 export const generateFillerData = async (db: SQLiteDatabase) => {
   const user: User = {id: 1, name: 'John Doe', email: 'john.doe@example.com'};
 
@@ -442,5 +423,17 @@ export const generateFillerData = async (db: SQLiteDatabase) => {
     }
   } catch (error) {
     console.error('Failed to generate filler data', error);
+  }
+};
+
+export const initDatabase = async () => {
+  try {
+    const db = await connectToDatabase();
+    enablePromise(true);
+    await db.executeSql('PRAGMA foreign_keys = ON');
+    await createTables(db);
+    await generateFillerData(db);
+  } catch (error) {
+    console.error(error);
   }
 };

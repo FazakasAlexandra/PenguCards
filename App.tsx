@@ -5,7 +5,7 @@
  * @format
  */
 
-import React from 'react';
+import React, {useEffect} from 'react';
 import * as eva from '@eva-design/eva';
 import {default as theme} from './custom-theme.json'; // <-- Import app theme
 import DeckView from './views/DeckView';
@@ -17,10 +17,23 @@ import {RootStackParamList} from './types/Navigation';
 import CardsList from './views/CardsList';
 import DeckPracticeView from './views/DeckPracticeView';
 import DeckCompletedView from './views/DeckCompletedView';
+import {initDatabase} from './services/databaseService';
 
 const App: React.FC = () => {
   // const isDarkMode = useColorScheme() === 'dark';
   const Stack = createNativeStackNavigator<RootStackParamList>();
+
+  useEffect(() => {
+    const loadData = async () => {
+      try {
+        initDatabase();
+      } catch (error) {
+        console.log(error);
+      }
+    };
+    loadData();
+  }, []);
+
   return (
     <NavigationContainer>
       <IconRegistry icons={EvaIconsPack} />
