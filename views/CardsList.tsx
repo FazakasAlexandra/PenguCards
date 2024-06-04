@@ -11,6 +11,55 @@ import {getCardsByDeck, searchCardsByText} from '../services/databaseService';
 
 type CardsListProps = NativeStackScreenProps<RootStackParamList, 'CardsList'>;
 
+const splitText = (text: string, searchTerm: string) =>
+  text.split(new RegExp(`(${searchTerm})`, 'gi'));
+
+const HighlightedFrontText = (props: {
+  text: string;
+  searchTerm: string;
+  splitText: (text: string, searchTerm: string) => string[];
+}) => (
+  <Text>
+    {splitText(props.text, props.searchTerm).map((part, index) => {
+      return (
+        <React.Fragment key={index}>
+          {part.toLowerCase() === props.searchTerm.toLowerCase() ? (
+            <Text category="s1">{part}</Text>
+          ) : (
+            <Text>{part}</Text>
+          )}
+        </React.Fragment>
+      );
+    })}
+  </Text>
+);
+
+const HighlightedBackText = (props: {text: string; searchTerm: string}) => (
+  <Text>
+    {splitText(props.text, props.searchTerm).map((part, index) => {
+      return (
+        <React.Fragment key={part + index}>
+          {part.toLowerCase() === props.searchTerm.toLowerCase() ? (
+            <Text
+              appearance="hint"
+              category="c2"
+              style={{textAlign: 'center', marginTop: 4}}>
+              {part}
+            </Text>
+          ) : (
+            <Text
+              appearance="hint"
+              category="c1"
+              style={{textAlign: 'center', marginTop: 4}}>
+              {part}
+            </Text>
+          )}
+        </React.Fragment>
+      );
+    })}
+  </Text>
+);
+
 const CardsList = ({route, navigation}: CardsListProps) => {
   const deck = route.params;
   const [searchTerm, setSearchTerm] = React.useState<string>('');
@@ -45,51 +94,6 @@ const CardsList = ({route, navigation}: CardsListProps) => {
     fetchCards();
   }, [searchTerm]);
 
-  const splitText = (text: string) =>
-    text.split(new RegExp(`(${searchTerm})`, 'gi'));
-
-  const HighlightedFrontText = (props: {text: string}) => (
-    <Text>
-      {splitText(props.text).map((part, index) => {
-        return (
-          <React.Fragment key={index}>
-            {part.toLowerCase() === searchTerm.toLowerCase() ? (
-              <Text category="s1">{part}</Text>
-            ) : (
-              <Text>{part}</Text>
-            )}
-          </React.Fragment>
-        );
-      })}
-    </Text>
-  );
-
-  const HighlightedBackText = (props: {text: string}) => (
-    <Text>
-      {splitText(props.text).map((part, index) => {
-        return (
-          <React.Fragment key={part + index}>
-            {part.toLowerCase() === searchTerm.toLowerCase() ? (
-              <Text
-                appearance="hint"
-                category="c2"
-                style={{textAlign: 'center', marginTop: 4}}>
-                {part}
-              </Text>
-            ) : (
-              <Text
-                appearance="hint"
-                category="c1"
-                style={{textAlign: 'center', marginTop: 4}}>
-                {part}
-              </Text>
-            )}
-          </React.Fragment>
-        );
-      })}
-    </Text>
-  );
-
   return (
     <View style={{flex: 1}}>
       <LogoHeader />
@@ -114,7 +118,7 @@ const CardsList = ({route, navigation}: CardsListProps) => {
             alignItems: 'center',
           }}>
           {(searchTerm && !cards.length && <Text>No cards found.</Text>) ||
-            cards.map((card: CardT, idx) => (
+            cards.map((card: CardT) => (
               <Card
                 onPress={() => {
                   navigation.reset({
@@ -144,8 +148,12 @@ const CardsList = ({route, navigation}: CardsListProps) => {
                     height={25}
                   />
                 ) : null}
-                <HighlightedFrontText text={card.front} />
-                <HighlightedBackText text={card.back} />
+                <HighlightedFrontText
+                  text={card.front}
+                  splitText={splitText}
+                  searchTerm={searchTerm}
+                />
+                <HighlightedBackText text={card.back} searchTerm={searchTerm} />
               </Card>
             ))}
         </Layout>
