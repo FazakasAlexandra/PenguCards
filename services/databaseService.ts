@@ -287,28 +287,6 @@ export const searchDecksByTitle = async (searchString: string) => {
   }
 };
 
-export const getCardsByDeck = async (
-  deckId: number,
-  limit: number,
-  offset: number,
-): Promise<Card[]> => {
-  const db = await connectToDatabase();
-  try {
-    const results = await db.executeSql(
-      `SELECT * FROM Card WHERE deck_id = ${deckId}
-      LIMIT ${limit} OFFSET ${offset}`,
-    );
-    const cards: Card[] = [];
-    for (let i = 0; i < results[0].rows.length; i++) {
-      cards.push(results[0].rows.item(i));
-    }
-    return cards;
-  } catch (error) {
-    console.error('Failed to fetch cards', error);
-    throw new Error('Failed to fetch cards');
-  }
-};
-
 export const getCardById = async (id: number): Promise<Card | null> => {
   const db = await connectToDatabase();
   try {
@@ -323,7 +301,7 @@ export const getCardById = async (id: number): Promise<Card | null> => {
   }
 };
 
-export const searchCardsByText = async (
+export const getCards = async (
   deckId: number,
   searchString: string,
   limit: number,
