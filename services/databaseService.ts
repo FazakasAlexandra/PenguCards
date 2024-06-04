@@ -324,6 +324,7 @@ export const getCardById = async (id: number): Promise<Card | null> => {
 };
 
 export const searchCardsByText = async (
+  deckId: number,
   searchString: string,
   limit: number,
   offset: number,
@@ -333,7 +334,8 @@ export const searchCardsByText = async (
 
     const results = await db.executeSql(
       `SELECT * FROM Card 
-      WHERE front LIKE '%${searchString}%' OR back LIKE '%${searchString}%'
+      WHERE deck_id = ${deckId}
+      AND (front LIKE '%${searchString}%' OR back LIKE '%${searchString}%)'
       LIMIT ${limit} OFFSET ${offset}`,
     );
 
