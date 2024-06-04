@@ -1,7 +1,8 @@
 export type Card = {
-  id: string;
+  id: number;
   image?: string;
   front: string;
   back: string;
-  hint: string;
+  hint?: string;
+  deck_id: number;
 };

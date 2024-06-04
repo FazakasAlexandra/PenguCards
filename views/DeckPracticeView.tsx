@@ -23,7 +23,7 @@ const DeckPracticeView = ({route, navigation}: DeckPracticeViewProps) => {
     return cardIndex !== -1 ? cardIndex : 0;
   };
 
-  const cards = route.params.deck.cards;
+  const cards = route.params.cards;
   const [currentCardIndex, setCurrentCardIndex] = React.useState<number>(
     getSelectedCardIndex(),
   );
