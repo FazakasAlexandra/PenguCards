@@ -356,7 +356,6 @@ export const generateFillerData = async (db: SQLiteDatabase) => {
   const decks: Deck[] = [
     {id: 1, title: 'Deck 1', user_id: user.id, cardsCount: 0, cards: []},
     {id: 2, title: 'Deck 2', user_id: user.id, cardsCount: 0, cards: []},
-    {id: 3, title: 'Deck 3', user_id: user.id, cardsCount: 0, cards: []},
   ];
 
   const cards: Card[] = [];
@@ -388,13 +387,30 @@ export const generateFillerData = async (db: SQLiteDatabase) => {
   }
 };
 
+const isDecksTableEmpty = async (db: SQLiteDatabase) => {
+  try {
+    const result = await db.executeSql('SELECT COUNT(*) as count FROM Deck');
+
+    const count = result[0].rows.item(0).count;
+
+    return count === 0;
+  } catch (error) {
+    console.error('Failed to check if the Decks table is empty:', error);
+    // Return true or false based on your error handling logic
+    return true;
+  }
+};
+
 export const initDatabase = async () => {
   try {
     const db = await connectToDatabase();
     enablePromise(true);
     await db.executeSql('PRAGMA foreign_keys = ON');
     await createTables(db);
-    // await generateFillerData(db);
+    const isEmpty = await isDecksTableEmpty(db);
+    if (isEmpty) {
+      await generateFillerData(db);
+    }
   } catch (error) {
     console.error(error);
   }
