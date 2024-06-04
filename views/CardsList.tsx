@@ -1,8 +1,8 @@
 import {Layout, Card, Text} from '@ui-kitten/components';
 import Controller from '../components/Controller';
 import LogoHeader from '../components/LogoHeader';
-import React, {useEffect} from 'react';
-import {ScrollView, View} from 'react-native';
+import React, {useState, useEffect, useCallback} from 'react';
+import {FlatList, View, ActivityIndicator} from 'react-native';
 import {Card as CardT} from '../types/Card';
 import {NativeStackScreenProps} from '@react-navigation/native-stack';
 import {RootStackParamList} from '../types/Navigation';
@@ -62,37 +62,59 @@ const HighlightedBackText = (props: {text: string; searchTerm: string}) => (
 
 const CardsList = ({route, navigation}: CardsListProps) => {
   const deck = route.params;
-  const [searchTerm, setSearchTerm] = React.useState<string>('');
-  const [cards, setCards] = React.useState<CardT[]>([]);
+  const [searchTerm, setSearchTerm] = useState<string>('');
+  const [cards, setCards] = useState<CardT[]>([]);
+  const [loading, setLoading] = useState<boolean>(false);
+  const [offset, setOffset] = useState<number>(0);
+  const [hasMore, setHasMore] = useState<boolean>(true);
+  const limit = 10;
 
   const receivedSearchTerm = (str: string) => {
     setSearchTerm(str);
   };
 
-  useEffect(() => {
-    const deckId = deck.id;
-    const fetchCards = async () => {
-      try {
-        const fetchedData = await getCardsByDeck(deckId);
-        setCards(fetchedData);
-      } catch (error) {
-        console.error(error);
+  const loadMoreCards = useCallback(async () => {
+    if (loading || !hasMore) {
+      return;
+    }
+    setLoading(true);
+
+    try {
+      const newCards = await getCardsByDeck(deck.id, limit, offset);
+      setCards(prevCards => [...prevCards, ...newCards]);
+      setOffset(prevOffset => prevOffset + limit);
+      if (newCards.length < limit) {
+        setHasMore(false);
       }
-    };
-    fetchCards();
-  }, [deck.id]);
+    } catch (error) {
+      console.error('Failed to fetch cards:', error);
+    } finally {
+      setLoading(false);
+    }
+  }, [deck.id, loading, offset, hasMore]);
+
+  useEffect(() => {
+    loadMoreCards();
+  }, [loadMoreCards]);
+
+  const renderFooter = () => {
+    if (!loading) {
+      return null;
+    }
+    return <ActivityIndicator size="large" color="#0000ff" />;
+  };
 
   useEffect(() => {
     const fetchCards = async () => {
       try {
-        const fetchedData = await searchCardsByText(searchTerm);
+        const fetchedData = await searchCardsByText(searchTerm, limit, offset);
         setCards(fetchedData);
       } catch (error) {
         console.log(error);
       }
     };
     fetchCards();
-  }, [searchTerm]);
+  }, [searchTerm, offset]);
 
   return (
     <View style={{flex: 1}}>
@@ -103,9 +125,53 @@ const CardsList = ({route, navigation}: CardsListProps) => {
         counter={deck.cardsCount}
         sendSearchTerm={receivedSearchTerm}
       />
-      <ScrollView
+      <FlatList
+        data={cards}
+        keyExtractor={item => item.id.toString()}
+        onEndReached={loadMoreCards}
+        onEndReachedThreshold={0.5}
+        numColumns={2}
+        ListFooterComponent={renderFooter}
         style={{flex: 1, paddingBottom: 12}}
-        contentInsetAdjustmentBehavior="automatic">
+        contentInsetAdjustmentBehavior="automatic"
+        renderItem={({item}) => (
+          <Card
+            onPress={() => {
+              navigation.reset({
+                index: 0,
+                routes: [
+                  {
+                    name: 'DeckPracticeView',
+                    params: {
+                      deck,
+                      cards,
+                      selectedCardId: item.id,
+                    },
+                  },
+                ],
+              });
+            }}
+            style={{
+              width: '48%',
+              justifyContent: 'center',
+              alignItems: 'center',
+              marginBottom: 12,
+            }}>
+            {item.image ? (
+              <Placeholder
+                style={{alignSelf: 'center'}}
+                width={25}
+                height={25}
+              />
+            ) : null}
+            <HighlightedFrontText
+              text={item.front}
+              splitText={splitText}
+              searchTerm={searchTerm}
+            />
+            <HighlightedBackText text={item.back} searchTerm={searchTerm} />
+          </Card>
+        )}>
         <Layout
           level="3"
           style={{
@@ -116,48 +182,8 @@ const CardsList = ({route, navigation}: CardsListProps) => {
             flexWrap: 'wrap',
             justifyContent: 'space-between',
             alignItems: 'center',
-          }}>
-          {(searchTerm && !cards.length && <Text>No cards found.</Text>) ||
-            cards.map((card: CardT) => (
-              <Card
-                onPress={() => {
-                  navigation.reset({
-                    index: 0,
-                    routes: [
-                      {
-                        name: 'DeckPracticeView',
-                        params: {
-                          deck,
-                          selectedCardId: card.id,
-                        },
-                      },
-                    ],
-                  });
-                }}
-                key={card.id}
-                style={{
-                  width: '48%',
-                  justifyContent: 'center',
-                  alignItems: 'center',
-                  marginBottom: 12,
-                }}>
-                {card.image ? (
-                  <Placeholder
-                    style={{alignSelf: 'center'}}
-                    width={25}
-                    height={25}
-                  />
-                ) : null}
-                <HighlightedFrontText
-                  text={card.front}
-                  splitText={splitText}
-                  searchTerm={searchTerm}
-                />
-                <HighlightedBackText text={card.back} searchTerm={searchTerm} />
-              </Card>
-            ))}
-        </Layout>
-      </ScrollView>
+          }}/>
+      </FlatList>
     </View>
   );
 };

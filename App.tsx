@@ -5,7 +5,7 @@
  * @format
  */
 
-import React, {useEffect} from 'react';
+import React, {useState, useEffect} from 'react';
 import * as eva from '@eva-design/eva';
 import {default as theme} from './custom-theme.json'; // <-- Import app theme
 import DeckView from './views/DeckView';
@@ -18,21 +18,28 @@ import CardsList from './views/CardsList';
 import DeckPracticeView from './views/DeckPracticeView';
 import DeckCompletedView from './views/DeckCompletedView';
 import {initDatabase} from './services/databaseService';
+import { ActivityIndicator } from 'react-native';
 
 const App: React.FC = () => {
   // const isDarkMode = useColorScheme() === 'dark';
   const Stack = createNativeStackNavigator<RootStackParamList>();
+  const [isDbReady, setIsDbReady] = useState(false);
 
   useEffect(() => {
     const loadData = async () => {
       try {
-        initDatabase();
+        await initDatabase();
+        setIsDbReady(true);
       } catch (error) {
         console.log(error);
       }
     };
     loadData();
   }, []);
+
+  if (!isDbReady) {
+    return <ActivityIndicator size="large" />;
+  }
 
   return (
     <NavigationContainer>

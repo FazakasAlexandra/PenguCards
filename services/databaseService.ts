@@ -278,7 +278,7 @@ export const searchDecksByTitle = async (searchString: string) => {
         decks.push(result.rows.item(i));
       }
     });
-    console.log('decks !!!!', decks);
+    console.log('decks !!', decks);
 
     return decks;
   } catch (error) {
@@ -287,11 +287,16 @@ export const searchDecksByTitle = async (searchString: string) => {
   }
 };
 
-export const getCardsByDeck = async (deckId: number): Promise<Card[]> => {
+export const getCardsByDeck = async (
+  deckId: number,
+  limit: number,
+  offset: number,
+): Promise<Card[]> => {
   const db = await connectToDatabase();
   try {
     const results = await db.executeSql(
-      `SELECT * FROM Card WHERE deck_id = ${deckId}`,
+      `SELECT * FROM Card WHERE deck_id = ${deckId}
+      LIMIT ${limit} OFFSET ${offset}`,
     );
     const cards: Card[] = [];
     for (let i = 0; i < results[0].rows.length; i++) {
@@ -320,12 +325,16 @@ export const getCardById = async (id: number): Promise<Card | null> => {
 
 export const searchCardsByText = async (
   searchString: string,
+  limit: number,
+  offset: number,
 ): Promise<Card[]> => {
   try {
     const db = await connectToDatabase();
 
     const results = await db.executeSql(
-      `SELECT * FROM Card WHERE front LIKE '%${searchString}%' OR back LIKE '%${searchString}%'`,
+      `SELECT * FROM Card 
+      WHERE front LIKE '%${searchString}%' OR back LIKE '%${searchString}%'
+      LIMIT ${limit} OFFSET ${offset}`,
     );
 
     const cards: Card[] = [];

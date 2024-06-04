@@ -1,6 +1,6 @@
 import {Layout, Card, Text, Button} from '@ui-kitten/components';
 import LogoHeader from '../components/LogoHeader';
-import React, {useEffect, useState} from 'react';
+import React, {useEffect} from 'react';
 import {View} from 'react-native';
 import {NativeStackScreenProps} from '@react-navigation/native-stack';
 import {RootStackParamList} from '../types/Navigation';
@@ -10,7 +10,6 @@ import LightbulbCrossed from '../assets/icons/lightbulbCrossed.svg';
 import FlipCard from 'react-native-flip-card';
 import Swiper from 'react-native-deck-swiper';
 import {Card as CardT} from '../types/Card';
-import {getCardById} from '../services/databaseService';
 
 type DeckPracticeViewProps = NativeStackScreenProps<
   RootStackParamList,
@@ -18,42 +17,34 @@ type DeckPracticeViewProps = NativeStackScreenProps<
 >;
 
 const DeckPracticeView = ({route, navigation}: DeckPracticeViewProps) => {
-  const selectedCardId = +route.params.selectedCardId;
-  const cardsCount = route.params.deck.cardsCount;
-  const [currentCard, setCurrentCard] = useState<CardT>({});
-  const [currentCardId, setCurrentCardId] = useState<number>(
-    selectedCardId || 1,
-  );
-  const [mode, setMode] = useState<'front' | 'back' | 'hint'>('front');
-  const [swipeDirection, setSwipeDirection] = useState<'left' | 'right' | null>(
-    null,
-  );
+  const getSelectedCardIndex = () => {
+    const selectedCardId = route.params.selectedCardId;
+    const cardIndex = cards.findIndex(card => card.id === selectedCardId);
+    return cardIndex !== -1 ? cardIndex : 0;
+  };
 
-  const getNextCardId = () => {
+  const cards = route.params.cards;
+  const [currentCardIndex, setCurrentCardIndex] = React.useState<number>(
+    getSelectedCardIndex(),
+  );
+  const [mode, setMode] = React.useState<'front' | 'back' | 'hint'>('front');
+  const [swipeDirection, setSwipeDirection] = React.useState<
+    'left' | 'right' | null
+  >(null);
+
+  const getNextCardIndex = () => {
     if (swipeDirection === 'left') {
-      return currentCardId === 1 ? 1 : currentCardId - 1;
+      return currentCardIndex === 0 ? 0 : currentCardIndex - 1;
     } else {
-      return currentCardId + 1;
+      return currentCardIndex + 1;
     }
   };
 
   useEffect(() => {
-    const fetchCard = async () => {
-      try {
-        const fetchedCard = await getCardById(currentCardId);
-        setCurrentCard(fetchedCard);
-      } catch (error) {
-        console.error(error);
-      }
-    };
-    fetchCard();
-  }, [currentCardId]);
-
-  useEffect(() => {
-    if (currentCardId >= cardsCount) {
+    if (currentCardIndex >= cards.length) {
       navigation.navigate('DeckCompletedView', {deck: route.params.deck});
     }
-  }, [currentCardId, cardsCount, navigation]);
+  }, [currentCardIndex, cards.length, navigation]);
 
   const HintCard = () => {
     return (
@@ -65,7 +56,7 @@ const DeckPracticeView = ({route, navigation}: DeckPracticeViewProps) => {
           justifyContent: 'center',
         }}>
         <Text style={{fontSize: 25, alignSelf: 'center'}}>
-          {cards[currentCardId].hint}
+          {cards[currentCardIndex].hint}
         </Text>
         <HintButton />
       </Card>
@@ -73,7 +64,7 @@ const DeckPracticeView = ({route, navigation}: DeckPracticeViewProps) => {
   };
 
   const NextCard = () => {
-    const nextCardIndex = getNextCardId();
+    const nextCardIndex = getNextCardIndex();
 
     return (
       <Card
@@ -124,7 +115,7 @@ const DeckPracticeView = ({route, navigation}: DeckPracticeViewProps) => {
 
   const onSwipe = () => {
     setMode('front');
-    setCurrentCardId(getNextCardId());
+    setCurrentCardIndex(getNextCardIndex());
   };
 
   const changeSwipeDirection = (x: number) => {
@@ -140,19 +131,19 @@ const DeckPracticeView = ({route, navigation}: DeckPracticeViewProps) => {
       <LogoHeader />
       <View>
         <ProgressBar
-          progress={currentCardId / cards.length}
+          progress={currentCardIndex / cards.length}
           size="giant"
           style={{width: '95%', alignSelf: 'center', height: 18}}
         />
         <Text style={{position: 'absolute', right: '50%'}}>
-          {`${currentCardId} / ${cards.length}`}
+          {`${currentCardIndex} / ${cards.length}`}
         </Text>
       </View>
       <Layout level="3" style={{flex: 1}}>
         <Swiper
           showSecondCard={false}
-          goBackToPreviousCardOnSwipeLeft={currentCardId !== 0}
-          disableLeftSwipe={currentCardId === 0}
+          goBackToPreviousCardOnSwipeLeft={currentCardIndex !== 0}
+          disableLeftSwipe={currentCardIndex === 0}
           disableTopSwipe={true}
           disableBottomSwipe={true}
           cardVerticalMargin={0}
@@ -164,7 +155,7 @@ const DeckPracticeView = ({route, navigation}: DeckPracticeViewProps) => {
           containerStyle={{flex: 1}}
           cards={cards}
           swipeBackCard={true}
-          cardIndex={currentCardId}
+          cardIndex={currentCardIndex}
           onSwipedLeft={onSwipe}
           onSwipedRight={onSwipe}
           onSwiping={changeSwipeDirection}
@@ -190,7 +181,7 @@ const DeckPracticeView = ({route, navigation}: DeckPracticeViewProps) => {
                         justifyContent: 'center',
                       }}>
                       <Text style={{fontSize: 25, alignSelf: 'center'}}>
-                        {currentCard.front}
+                        {card.front}
                       </Text>
                       <HintButton />
                     </Card>
@@ -209,7 +200,7 @@ const DeckPracticeView = ({route, navigation}: DeckPracticeViewProps) => {
                         fontSize: 25,
                         alignSelf: 'center',
                       }}>
-                      {currentCard.back}
+                      {card.back}
                     </Text>
                   </Card>
                 </FlipCard>
@@ -217,7 +208,7 @@ const DeckPracticeView = ({route, navigation}: DeckPracticeViewProps) => {
             );
           }}
         />
-        {getNextCardId() >= cardsCount ? null : <NextCard />}
+        {getNextCardIndex() >= cards.length ? null : <NextCard />}
       </Layout>
     </View>
   );
