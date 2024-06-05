@@ -77,7 +77,7 @@ const CardsList = ({route, navigation}: CardsListProps) => {
     <View style={{flex: 1}}>
       <LogoHeader />
       <Controller
-        controlls="cards"
+        controls="cards"
         title={deck.title}
         counter={deck.cardsCount}
         resetFilter={() => {}}
