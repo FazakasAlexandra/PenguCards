@@ -1,12 +1,13 @@
 import {Layout, Card, Text} from '@ui-kitten/components';
 import Controller from '../components/Controller';
 import LogoHeader from '../components/LogoHeader';
-import React from 'react';
+import React, {useState, useEffect} from 'react';
 import {ScrollView, View} from 'react-native';
 import {Card as CardT} from '../types/Card';
 import {NativeStackScreenProps} from '@react-navigation/native-stack';
 import {RootStackParamList} from '../types/Navigation';
 import Placeholder from '../assets/icons/placeholder.svg';
+import {getCards} from '../services/databaseService';
 
 type CardsListProps = NativeStackScreenProps<RootStackParamList, 'CardsList'>;
 
@@ -57,8 +58,20 @@ const HighlightedBackText = (props: {text: string; searchTerm: string}) => (
 
 const CardsList = ({route, navigation}: CardsListProps) => {
   const deck = route.params;
-  const [searchTerm, setSearchTerm] = React.useState<string>('');
-  const [filteredCards, setFilteredCards] = React.useState<CardT[]>(deck.cards);
+  const [searchTerm, setSearchTerm] = useState<string>('');
+  const [filteredCards, setFilteredCards] = useState<CardT[]>(deck.cards);
+  // const [offset, setOffset] = useState<number>(0);
+  // const limit = 16;
+
+  // useEffect(() => {
+  //   const fetchCards = async () => {
+  //     const fetchedCards = await getCards(deck.id, limit, offset, searchTerm);
+  //     for (const card of fetchedCards) {
+  //       deck.cards.push(card);
+  //     }
+  //   };
+  //   fetchCards();
+  // }, [deck.id, searchTerm]);
 
   return (
     <View style={{flex: 1}}>
