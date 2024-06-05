@@ -91,7 +91,6 @@ export const createTables = async (db: SQLiteDatabase) => {
 };
 
 // CREATE functions
-
 export const addUser = async (db: SQLiteDatabase, user: User) => {
   try {
     return await db.executeSql(
@@ -104,7 +103,6 @@ export const addUser = async (db: SQLiteDatabase, user: User) => {
 };
 
 export const addDeck = async (db: SQLiteDatabase, deck: Deck) => {
-  // Ensure the referenced user_id exists
   try {
     const result = await db.executeSql(
       `SELECT id FROM User WHERE id = ${deck.user_id}`,
@@ -128,7 +126,6 @@ export const addDeck = async (db: SQLiteDatabase, deck: Deck) => {
 };
 
 export const addCard = async (db: SQLiteDatabase, card: Card) => {
-  // Ensure the referenced deck_id exists
   try {
     const result = await db.executeSql(
       `SELECT id FROM Deck WHERE id = ${card.deck_id}`,
@@ -151,7 +148,6 @@ export const addCard = async (db: SQLiteDatabase, card: Card) => {
 };
 
 // UPDATE functions
-
 export const updateUser = async (db: SQLiteDatabase, user: User) => {
   try {
     return await db.executeSql(
@@ -166,7 +162,6 @@ export const updateUser = async (db: SQLiteDatabase, user: User) => {
 };
 
 export const updateDeck = async (db: SQLiteDatabase, deck: Deck) => {
-  // Ensure the referenced user_id exists
   try {
     const result = await db.executeSql(
       `SELECT id FROM User WHERE id = ${deck.user_id}`,
@@ -191,7 +186,6 @@ export const updateDeck = async (db: SQLiteDatabase, deck: Deck) => {
 };
 
 export const updateCard = async (db: SQLiteDatabase, card: Card) => {
-  // Ensure the referenced deck_id exists
   try {
     const result = await db.executeSql(
       `SELECT id FROM Deck WHERE id = ${card.deck_id}`,
@@ -216,7 +210,6 @@ export const updateCard = async (db: SQLiteDatabase, card: Card) => {
 };
 
 // DELETE functions
-
 export const deleteUser = async (db: SQLiteDatabase, userId: number) => {
   try {
     return await db.executeSql(`DELETE FROM User WHERE id = ${userId}`);
@@ -403,7 +396,6 @@ const isDecksTableEmpty = async (db: SQLiteDatabase) => {
     return count === 0;
   } catch (error) {
     console.error('Failed to check if the Decks table is empty:', error);
-    // Return true or false based on your error handling logic
     return true;
   }
 };
