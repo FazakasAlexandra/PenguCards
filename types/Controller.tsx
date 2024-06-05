@@ -1,7 +1,7 @@
 export type ControllerProps = {
   title: string;
   counter: number;
-  controlls: string;
+  controls: string;
   filterCards: (searchTerm: string) => void;
   resetFilter: () => void;
 };

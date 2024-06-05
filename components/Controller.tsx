@@ -8,7 +8,7 @@ const Controller = ({
   counter,
   filterCards,
   resetFilter,
-  controlls,
+  controls,
 }: ControllerProps) => {
   const [searchTerm, setSearchTerm] = useState('');
 
@@ -48,13 +48,13 @@ const Controller = ({
           status="basic"
           appearance="ghost"
           accessoryLeft={<Icon name="plus" />}>
-          {controlls.charAt(0).toUpperCase() + controlls.slice(1)}
+          {controls.charAt(0).toUpperCase() + controls.slice(1)}
         </Button>
       </View>
       <Input
         value={searchTerm}
         size="small"
-        placeholder={`Search for ${controlls}`}
+        placeholder={`Search for ${controls}`}
         accessoryRight={<Icon name="search" />}
         accessoryLeft={
           (searchTerm && (
