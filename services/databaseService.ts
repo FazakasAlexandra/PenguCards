@@ -44,11 +44,46 @@ export const createTables = async (db: SQLiteDatabase) => {
       deck_id INTEGER,
       FOREIGN KEY (deck_id) REFERENCES Deck(id) ON DELETE CASCADE
     )`;
+  const triggerInsert = `
+    CREATE TRIGGER IF NOT EXISTS update_cards_count_insert
+    AFTER INSERT ON Card
+    FOR EACH ROW
+    BEGIN
+        UPDATE Deck 
+        SET cards_count = (SELECT COUNT(*) FROM Card WHERE deck_id = NEW.deck_id)
+        WHERE id = NEW.deck_id;
+    END;`;
+
+  const triggerDelete = `
+    CREATE TRIGGER IF NOT EXISTS update_cards_count_delete
+    AFTER DELETE ON Card
+    FOR EACH ROW
+    BEGIN
+        UPDATE Deck 
+        SET cards_count = (SELECT COUNT(*) FROM Card WHERE deck_id = OLD.deck_id)
+        WHERE id = OLD.deck_id;
+    END;`;
+  const triggerUpdate = `
+    CREATE TRIGGER IF NOT EXISTS update_cards_count_update
+    AFTER UPDATE OF deck_id ON Card
+    FOR EACH ROW
+    WHEN OLD.deck_id != NEW.deck_id
+    BEGIN
+        UPDATE Deck 
+        SET cards_count = (SELECT COUNT(*) FROM Card WHERE deck_id = OLD.deck_id)
+        WHERE id = OLD.deck_id;
+        UPDATE Deck 
+        SET cards_count = (SELECT COUNT(*) FROM Card WHERE deck_id = NEW.deck_id)
+        WHERE id = NEW.deck_id;
+    END;`;
 
   try {
     await db.executeSql(userQuery);
     await db.executeSql(deckQuery);
     await db.executeSql(cardQuery);
+    await db.executeSql(triggerInsert);
+    await db.executeSql(triggerDelete);
+    await db.executeSql(triggerUpdate);
   } catch (error) {
     console.error(error);
     throw Error('Failed to create tables');
@@ -106,17 +141,9 @@ export const addCard = async (db: SQLiteDatabase, card: Card) => {
     throw new Error('Failed to verify deck_id for card');
   }
   try {
-    return await db.transaction(tx => {
-      tx.executeSql(
-        `INSERT INTO Card (image, front, back, hint, deck_id) 
-        VALUES ('${card.image}', '${card.front}', '${card.back}', '${card.hint}', ${card.deck_id})`,
-      );
-      tx.executeSql(
-        `UPDATE Deck 
-        SET cards_count = (SELECT COUNT(*) FROM Card 
-        WHERE deck_id = ${card.deck_id})`,
-      );
-    });
+    return await db.executeSql(`
+      INSERT INTO Card (image, front, back, hint, deck_id) 
+      VALUES ('${card.image}', '${card.front}', '${card.back}', '${card.hint}', ${card.deck_id})`);
   } catch (error) {
     console.error(error);
     throw new Error('Failed to add card');
@@ -208,9 +235,9 @@ export const deleteDeck = async (db: SQLiteDatabase, deckId: number) => {
   }
 };
 
-export const deleteCard = async (db: SQLiteDatabase, cardId: number) => {
+export const deleteCard = async (db: SQLiteDatabase, card: Card) => {
   try {
-    return await db.executeSql(`DELETE FROM Card WHERE id = ${cardId}`);
+    return await db.executeSql(`DELETE FROM Card WHERE id = ${card.id}`);
   } catch (error) {
     console.error(error);
     throw new Error('Failed to delete card');
