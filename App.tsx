@@ -5,22 +5,41 @@
  * @format
  */
 
-import React from 'react';
+import React, {useEffect, useState} from 'react';
 import * as eva from '@eva-design/eva';
 import {default as theme} from './custom-theme.json'; // <-- Import app theme
 import DeckView from './views/DeckView';
 import {ApplicationProvider, IconRegistry} from '@ui-kitten/components';
 import {EvaIconsPack} from '@ui-kitten/eva-icons';
 import {NavigationContainer} from '@react-navigation/native';
+import {ActivityIndicator} from 'react-native';
 import {createNativeStackNavigator} from '@react-navigation/native-stack';
 import {RootStackParamList} from './types/Navigation';
 import CardsList from './views/CardsList';
 import DeckPracticeView from './views/DeckPracticeView';
 import DeckCompletedView from './views/DeckCompletedView';
+import {initDatabase} from './services/databaseService';
 
 function App(): React.JSX.Element {
   // const isDarkMode = useColorScheme() === 'dark';
   const Stack = createNativeStackNavigator<RootStackParamList>();
+  const [isDbReady, setIsDbReady] = useState(false);
+
+  useEffect(() => {
+    (async () => {
+      try {
+        await initDatabase();
+        setIsDbReady(true);
+      } catch (error) {
+        console.log(error);
+      }
+    })();
+  }, []);
+
+  if (!isDbReady) {
+    return <ActivityIndicator size="large" />;
+  }
+
   return (
     <NavigationContainer>
       <IconRegistry icons={EvaIconsPack} />

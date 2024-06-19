@@ -1,56 +1,42 @@
-import {Layout, Text} from '@ui-kitten/components';
+import { Layout, Text } from '@ui-kitten/components';
 import DeckCard from '../components/DeckCard';
 import Controller from '../components/Controller';
 import LogoHeader from '../components/LogoHeader';
-import React, {useEffect} from 'react';
-import {ScrollView, View} from 'react-native';
+import React, { useEffect } from 'react';
+import { ScrollView, View } from 'react-native';
 import Dice from '../assets/icons/dice.svg';
-import {Deck} from '../types/Deck';
-import {
-  getDocs,
-  collection,
-  DocumentData,
-  CollectionReference,
-  QuerySnapshot,
-} from 'firebase/firestore';
-import db from '../firebaseConfig';
+import { Deck } from '../types/Deck';
+import { getDecksByUser, getCards } from '../services/databaseService';
 
-const DeckView = ({navigation}: {navigation: any}) => {
+const DeckView = ({ navigation }: { navigation: any }) => {
   const [decks, setDecks] = React.useState<Deck[]>([]);
   const [filteredDecks, setFilteredDecks] = React.useState<Deck[]>([]);
 
   useEffect(() => {
     (async () => {
-      const decks = await getDecks();
-      setDecks(decks);
-      setFilteredDecks(decks);
+      const userId = 1;
+      try {
+        const fetchedDecks = await getDecksByUser(userId);
+        console.log('fetchedDecks', fetchedDecks)
+        const builtDecks = [];
+        for (const deck of fetchedDecks) {
+          const deckCards = await getCards(deck.id);
+          deck.cards = deckCards;
+          builtDecks.push(deck);
+        }
+        setDecks(builtDecks);
+        setFilteredDecks(builtDecks);
+      } catch (error) {
+        console.error('Failed to build decks', error);
+      }
     })();
   }, []);
 
-  const getDecks = async (): Promise<Deck[]> => {
-    try {
-      const decksCollection: CollectionReference<DocumentData> = collection(
-        db,
-        'docks',
-      );
-      const decksSnapshot: QuerySnapshot<DocumentData> = await getDocs(
-        decksCollection,
-      );
-      return decksSnapshot.docs.map(doc => {
-        const deck = doc.data();
-        return {...deck, id: doc.id, cardsCount: deck.cards.length} as Deck;
-      });
-    } catch (error) {
-      console.error('Error getting collection: ', error);
-      return [];
-    }
-  };
-
   return (
-    <View style={{flex: 1}}>
+    <View style={{ flex: 1 }}>
       <LogoHeader />
       <Controller
-        controlls="deck"
+        controls="deck"
         title="Decks"
         counter={decks.length}
         resetFilter={() => setFilteredDecks(decks)}
@@ -62,11 +48,11 @@ const DeckView = ({navigation}: {navigation: any}) => {
         }}
       />
       <ScrollView
-        style={{flex: 1, paddingBottom: 12}}
+        style={{ flex: 1, paddingBottom: 12 }}
         contentInsetAdjustmentBehavior="automatic">
         <Layout
           level="3"
-          style={{flex: 1, paddingLeft: 12, paddingRight: 12, paddingTop: 12}}>
+          style={{ flex: 1, paddingLeft: 12, paddingRight: 12, paddingTop: 12 }}>
           {(filteredDecks.length &&
             filteredDecks.map(deck => (
               <DeckCard
