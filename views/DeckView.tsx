@@ -1,22 +1,23 @@
-import {Layout, Text} from '@ui-kitten/components';
+import { Layout, Text } from '@ui-kitten/components';
 import DeckCard from '../components/DeckCard';
 import Controller from '../components/Controller';
 import LogoHeader from '../components/LogoHeader';
-import React, {useEffect} from 'react';
-import {ScrollView, View} from 'react-native';
+import React, { useEffect } from 'react';
+import { ScrollView, View } from 'react-native';
 import Dice from '../assets/icons/dice.svg';
-import {Deck} from '../types/Deck';
-import {getDecksByUser, getCards} from '../services/databaseService';
+import { Deck } from '../types/Deck';
+import { getDecksByUser, getCards } from '../services/databaseService';
 
-const DeckView = ({navigation}: {navigation: any}) => {
+const DeckView = ({ navigation }: { navigation: any }) => {
   const [decks, setDecks] = React.useState<Deck[]>([]);
   const [filteredDecks, setFilteredDecks] = React.useState<Deck[]>([]);
 
   useEffect(() => {
-    const buildDecks = async () => {
+    (async () => {
       const userId = 1;
       try {
         const fetchedDecks = await getDecksByUser(userId);
+        console.log('fetchedDecks', fetchedDecks)
         const builtDecks = [];
         for (const deck of fetchedDecks) {
           const deckCards = await getCards(deck.id);
@@ -28,12 +29,11 @@ const DeckView = ({navigation}: {navigation: any}) => {
       } catch (error) {
         console.error('Failed to build decks', error);
       }
-    };
-    buildDecks();
+    })();
   }, []);
 
   return (
-    <View style={{flex: 1}}>
+    <View style={{ flex: 1 }}>
       <LogoHeader />
       <Controller
         controlls="deck"
@@ -48,11 +48,11 @@ const DeckView = ({navigation}: {navigation: any}) => {
         }}
       />
       <ScrollView
-        style={{flex: 1, paddingBottom: 12}}
+        style={{ flex: 1, paddingBottom: 12 }}
         contentInsetAdjustmentBehavior="automatic">
         <Layout
           level="3"
-          style={{flex: 1, paddingLeft: 12, paddingRight: 12, paddingTop: 12}}>
+          style={{ flex: 1, paddingLeft: 12, paddingRight: 12, paddingTop: 12 }}>
           {(filteredDecks.length &&
             filteredDecks.map(deck => (
               <DeckCard

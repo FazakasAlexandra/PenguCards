@@ -26,15 +26,14 @@ function App(): React.JSX.Element {
   const [isDbReady, setIsDbReady] = useState(false);
 
   useEffect(() => {
-    const loadData = async () => {
+    (async () => {
       try {
         await initDatabase();
         setIsDbReady(true);
       } catch (error) {
         console.log(error);
       }
-    };
-    loadData();
+    })();
   }, []);
 
   if (!isDbReady) {
