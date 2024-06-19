@@ -36,7 +36,7 @@ const DeckView = ({ navigation }: { navigation: any }) => {
     <View style={{ flex: 1 }}>
       <LogoHeader />
       <Controller
-        controlls="deck"
+        controls="deck"
         title="Decks"
         counter={decks.length}
         resetFilter={() => setFilteredDecks(decks)}
